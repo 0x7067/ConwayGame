@@ -5,13 +5,85 @@
 //  Created by Pedro Guimarães on 9/7/25.
 //
 
-import Testing
+import XCTest
 @testable import ConwayGameCodex
 
-struct ConwayGameCodexTests {
+final class ConwayGameCodexTests: XCTestCase {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    func test_blockStillLifeRemainsStable() throws {
+        let engine = ConwayGameEngine()
+        let grid: CellsGrid = [
+            [false,false,false,false],
+            [false,true, true, false],
+            [false,true, true, false],
+            [false,false,false,false],
+        ]
+        let next = engine.computeNextState(grid)
+        XCTAssertEqual(next, grid)
     }
 
+    func test_blinkerOscillatorPeriod2() throws {
+        let engine = ConwayGameEngine()
+        let grid: CellsGrid = [
+            [false,false,false,false,false],
+            [false,false,false,false,false],
+            [false,true, true, true, false],
+            [false,false,false,false,false],
+            [false,false,false,false,false],
+        ]
+        let next = engine.computeNextState(grid)
+        let expected: CellsGrid = [
+            [false,false,false,false,false],
+            [false,false,true, false,false],
+            [false,false,true, false,false],
+            [false,false,true, false,false],
+            [false,false,false,false,false],
+        ]
+        XCTAssertEqual(next, expected)
+        XCTAssertEqual(engine.computeNextState(next), grid)
+    }
+
+    func test_gliderMovesDiagonally() throws {
+        let engine = ConwayGameEngine()
+        // Simple glider in 5x5
+        var grid: CellsGrid = [
+            [false,false,false,false,false],
+            [false,false,true, false,false],
+            [false,false,false,true, false],
+            [false,true, true, true, false],
+            [false,false,false,false,false],
+        ]
+        // After 4 generations, it should translate by (1,1)
+        for _ in 0..<4 { grid = engine.computeNextState(grid) }
+        let expected: CellsGrid = [
+            [false,false,false,false,false],
+            [false,false,false,false,false],
+            [false,false,true, false,false],
+            [false,false,false,true, false],
+            [false,false,true, true, false],
+        ]
+        XCTAssertEqual(grid, expected)
+    }
+
+    func test_extinctionDetection() async throws {
+        let service = DefaultGameService(
+            gameEngine: ConwayGameEngine(),
+            repository: InMemoryBoardRepository(),
+            convergenceDetector: DefaultConvergenceDetector()
+        )
+        let grid: CellsGrid = [
+            [false,false,false],
+            [false,true, false],
+            [false,false,false],
+        ]
+        let result = await service.createBoard(grid, name: "Single")
+        guard case .success(let id) = result else { XCTFail("create failed"); return }
+        let final = await service.getFinalState(boardId: id, maxIterations: 4)
+        switch final {
+        case .success(let s):
+            XCTAssertEqual(s.populationCount, 0)
+        case .failure:
+            XCTFail("Final state failed")
+        }
+    }
 }
