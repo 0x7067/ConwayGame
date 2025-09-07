@@ -49,6 +49,16 @@ final class GameViewModel: ObservableObject {
         switch await service.getStateAtGeneration(boardId: boardId, generation: generation) {
         case .success(let s):
             self.state = s
+            // Update the board in repository to sync with jumped state
+            do {
+                guard var board = try await repository.load(id: boardId) else { return }
+                board.cells = s.cells
+                board.currentGeneration = s.generation
+                board.stateHistory = [BoardHashing.hash(for: s.cells)]
+                try await repository.save(board)
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
         case .failure(let e):
             self.errorMessage = e.localizedDescription
         }
