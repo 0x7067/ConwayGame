@@ -2,7 +2,7 @@ import Foundation
 
 public typealias CellsGrid = [[Bool]]
 
-public struct Board: Codable, Identifiable, Hashable {
+public struct Board: Codable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public var name: String
     public var width: Int
@@ -50,13 +50,13 @@ public struct Board: Codable, Identifiable, Hashable {
     }
 }
 
-public enum ConvergenceType: Codable, Equatable {
+public enum ConvergenceType: Codable, Equatable, Sendable {
     case continuing
     case extinct
     case cyclical(period: Int)
 }
 
-public enum BoardHashing {
+public enum BoardHashing: Sendable {
     // Convert grid to compact string hash (bit-packed then base64)
     public static func hash(for cells: CellsGrid) -> String {
         let height = cells.count

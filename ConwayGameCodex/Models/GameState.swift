@@ -1,6 +1,6 @@
 import Foundation
 
-public struct GameState: Codable, Equatable {
+public struct GameState: Codable, Equatable, Sendable {
     public let boardId: UUID
     public let generation: Int
     public let cells: CellsGrid

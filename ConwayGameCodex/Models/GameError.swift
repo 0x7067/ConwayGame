@@ -1,6 +1,6 @@
 import Foundation
 
-public enum GameError: LocalizedError, Equatable {
+public enum GameError: LocalizedError, Equatable, Sendable {
     case boardNotFound(UUID)
     case convergenceTimeout(maxIterations: Int)
     case invalidBoardDimensions

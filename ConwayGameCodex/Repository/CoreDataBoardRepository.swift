@@ -106,20 +106,46 @@ final class CoreDataBoardRepository: BoardRepository {
         }
     }
 
+    func rename(id: UUID, newName: String) async throws {
+        guard var board = try await load(id: id) else {
+            throw GameError.boardNotFound(id)
+        }
+        board.name = newName
+        try await save(board)
+    }
+    
+    func reset(id: UUID) async throws -> Board {
+        guard var board = try await load(id: id) else {
+            throw GameError.boardNotFound(id)
+        }
+        board.cells = board.initialCells
+        board.currentGeneration = 0
+        board.stateHistory = [BoardHashing.hash(for: board.initialCells)]
+        try await save(board)
+        return board
+    }
+    
     private func map(_ obj: NSManagedObject) throws -> Board {
-        let id = obj.value(forKey: "id") as! UUID
-        let name = obj.value(forKey: "name") as! String
-        let width = Int(obj.value(forKey: "width") as! Int16)
-        let height = Int(obj.value(forKey: "height") as! Int16)
-        let createdAt = obj.value(forKey: "createdAt") as! Date
-        let currentGeneration = Int(obj.value(forKey: "currentGeneration") as! Int32)
-        let isActive = obj.value(forKey: "isActive") as! Bool
-        let cellsData = obj.value(forKey: "cellsData") as! Data
-        let historyData = obj.value(forKey: "stateHistoryData") as! Data
-        let cells = decodeCells(data: cellsData, width: width, height: height)
+        guard let id = obj.value(forKey: "id") as? UUID,
+              let name = obj.value(forKey: "name") as? String,
+              let width = obj.value(forKey: "width") as? Int16,
+              let height = obj.value(forKey: "height") as? Int16,
+              let createdAt = obj.value(forKey: "createdAt") as? Date,
+              let currentGeneration = obj.value(forKey: "currentGeneration") as? Int32,
+              let isActive = obj.value(forKey: "isActive") as? Bool,
+              let cellsData = obj.value(forKey: "cellsData") as? Data,
+              let historyData = obj.value(forKey: "stateHistoryData") as? Data else {
+            throw GameError.persistenceError("Invalid data in Core Data entity")
+        }
+        
+        let cells = decodeCells(data: cellsData, width: Int(width), height: Int(height))
         let initialCellsData = (obj.value(forKey: "initialCellsData") as? Data) ?? cellsData
-        let initialCells = decodeCells(data: initialCellsData, width: width, height: height)
+        let initialCells = decodeCells(data: initialCellsData, width: Int(width), height: Int(height))
         let history = try decodeHistory(historyData)
-        return try Board(id: id, name: name, width: width, height: height, createdAt: createdAt, currentGeneration: currentGeneration, cells: cells, initialCells: initialCells, isActive: isActive, stateHistory: history)
+        
+        return try Board(id: id, name: name, width: Int(width), height: Int(height), 
+                        createdAt: createdAt, currentGeneration: Int(currentGeneration), 
+                        cells: cells, initialCells: initialCells, isActive: isActive, 
+                        stateHistory: history)
     }
 }

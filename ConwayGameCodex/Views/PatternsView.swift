@@ -35,7 +35,7 @@ struct PatternsView: View {
     }
 }
 
-struct PatternsView_Previews: PreviewProvider {
-    static var previews: some View { PatternsView() }
+#Preview {
+    PatternsView()
 }
 

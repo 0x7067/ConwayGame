@@ -8,22 +8,29 @@ final class GameViewModel: ObservableObject {
     @Published var isFinalLocked: Bool = false
 
     private let service: GameService
+    private let repository: BoardRepository
     private let boardId: UUID
     private var playTask: Task<Void, Never>?
     private var stepsThisRun: Int = 0
 
-    init(service: GameService, boardId: UUID) {
+    init(service: GameService, repository: BoardRepository, boardId: UUID) {
         self.service = service
+        self.repository = repository
         self.boardId = boardId
     }
 
     func loadCurrent() async {
-        switch await service.getCurrentState(boardId: boardId) {
-        case .success(let s):
-            self.state = s
+        do {
+            guard let board = try await repository.load(id: boardId) else {
+                self.errorMessage = "Board not found"
+                return
+            }
+            let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            self.state = GameState(boardId: board.id, generation: board.currentGeneration, 
+                                  cells: board.cells, isStable: false, populationCount: population)
             self.isFinalLocked = false
-        case .failure(let e):
-            self.errorMessage = e.localizedDescription
+        } catch {
+            self.errorMessage = error.localizedDescription
         }
     }
 
@@ -39,7 +46,7 @@ final class GameViewModel: ObservableObject {
 
     func jump(to generation: Int) async {
         isFinalLocked = false
-        switch await service.jumpToGeneration(boardId: boardId, generation: generation) {
+        switch await service.getStateAtGeneration(boardId: boardId, generation: generation) {
         case .success(let s):
             self.state = s
         case .failure(let e):
@@ -59,13 +66,15 @@ final class GameViewModel: ObservableObject {
     }
 
     func reset() async {
-        switch await service.resetBoard(boardId: boardId) {
-        case .success(let s):
-            self.state = s
+        do {
+            let board = try await repository.reset(id: boardId)
+            let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            self.state = GameState(boardId: board.id, generation: 0, 
+                                  cells: board.cells, isStable: false, populationCount: population)
             self.pause()
             self.isFinalLocked = false
-        case .failure(let e):
-            self.errorMessage = e.localizedDescription
+        } catch {
+            self.errorMessage = error.localizedDescription
         }
     }
 

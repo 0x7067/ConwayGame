@@ -76,8 +76,7 @@ final class ConwayGameCodexTests: XCTestCase {
             [false,true, false],
             [false,false,false],
         ]
-        let result = await service.createBoard(grid, name: "Single")
-        guard case .success(let id) = result else { XCTFail("create failed"); return }
+        let id = await service.createBoard(grid)
         let final = await service.getFinalState(boardId: id, maxIterations: 4)
         switch final {
         case .success(let s):

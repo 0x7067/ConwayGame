@@ -10,6 +10,7 @@ struct CreateBoardView: View {
     // Navigation to PatternPicker is handled by NavigationLink (no sheet)
 
     let gameService: GameService
+    let repository: BoardRepository
     var onCreated: ((UUID) -> Void)? = nil
 
     private func resizeGrid() {
@@ -65,13 +66,13 @@ struct CreateBoardView: View {
             Section {
                 Button("Create") {
                     Task {
-                        let result = await gameService.createBoard(cells, name: name)
-                        switch result {
-                        case .success(let id):
-                            onCreated?(id)
-                            dismiss()
-                        case .failure(let e): errorMessage = e.localizedDescription
+                        let id = await gameService.createBoard(cells)
+                        // Update name if different
+                        if name != "Board-\(id.uuidString.prefix(8))" {
+                            try? await repository.rename(id: id, newName: name)
                         }
+                        onCreated?(id)
+                        dismiss()
                     }
                 }
             }
@@ -80,8 +81,8 @@ struct CreateBoardView: View {
         .alert("Error", isPresented: .constant(errorMessage != nil), presenting: errorMessage) { _ in
             Button("OK") { errorMessage = nil }
         } message: { msg in Text(msg) }
-        .onChange(of: width) { _ in resizeGrid() }
-        .onChange(of: height) { _ in resizeGrid() }
+        .onChange(of: width) { resizeGrid() }
+        .onChange(of: height) { resizeGrid() }
     }
 }
 

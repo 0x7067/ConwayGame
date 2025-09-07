@@ -19,9 +19,7 @@ struct PatternPickerView: View {
     }
 }
 
-struct PatternPickerView_Previews: PreviewProvider {
-    static var previews: some View {
-        PatternPickerView(onSelect: { _ in })
-    }
+#Preview {
+    PatternPickerView(onSelect: { _ in })
 }
 

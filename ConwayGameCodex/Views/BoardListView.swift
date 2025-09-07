@@ -8,8 +8,8 @@ struct BoardListView: View {
     @State private var newName: String = ""
     @State private var showingCreate: Bool = false
 
-    init(gameService: GameService) {
-        _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService))
+    init(gameService: GameService, repository: BoardRepository) {
+        _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService, repository: repository))
     }
 
     var body: some View {
@@ -17,13 +17,13 @@ struct BoardListView: View {
             // Hidden link for programmatic navigation to newly created board
             NavigationLink(isActive: $navigateToCreated) {
                 if let id = createdId {
-                    GameBoardView(gameService: ServiceContainer.shared.gameService, boardId: id)
+                    GameBoardView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, boardId: id)
                 }
             } label: { EmptyView() }
 
             List {
                 ForEach(vm.boards, id: \.id) { board in
-                    NavigationLink(destination: GameBoardView(gameService: ServiceContainer.shared.gameService, boardId: board.id)) {
+                    NavigationLink(destination: GameBoardView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, boardId: board.id)) {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text(board.name)
@@ -60,7 +60,7 @@ struct BoardListView: View {
         }
         .task { await vm.load() }
         .fullScreenCover(isPresented: $showingCreate) {
-            CreateBoardRoot(gameService: ServiceContainer.shared.gameService, onCreated: { id in
+            CreateBoardRoot(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, onCreated: { id in
                 createdId = id
                 navigateToCreated = true
                 Task { await vm.load() }
@@ -81,7 +81,7 @@ struct BoardListView: View {
                             let nameTrimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
                             guard !nameTrimmed.isEmpty else { renamingBoard = nil; return }
                             Task {
-                                _ = await ServiceContainer.shared.gameService.renameBoard(id: b.id, newName: nameTrimmed)
+                                try? await ServiceContainer.shared.boardRepository.rename(id: b.id, newName: nameTrimmed)
                                 renamingBoard = nil
                                 await vm.load()
                             }
@@ -93,8 +93,6 @@ struct BoardListView: View {
     }
 }
 
-struct BoardListView_Previews: PreviewProvider {
-    static var previews: some View {
-        BoardListView(gameService: ServiceContainer.shared.gameService)
-    }
+#Preview {
+    BoardListView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository)
 }

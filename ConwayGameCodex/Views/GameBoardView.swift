@@ -4,8 +4,8 @@ struct GameBoardView: View {
     @StateObject private var vm: GameViewModel
     @State private var showGrid: Bool = true
 
-    init(gameService: GameService, boardId: UUID) {
-        _vm = StateObject(wrappedValue: GameViewModel(service: gameService, boardId: boardId))
+    init(gameService: GameService, repository: BoardRepository, boardId: UUID) {
+        _vm = StateObject(wrappedValue: GameViewModel(service: gameService, repository: repository, boardId: boardId))
     }
 
     var body: some View {
@@ -83,10 +83,10 @@ private struct BoardGrid: View {
     }
 }
 
-struct GameBoardView_Previews: PreviewProvider {
-    static var previews: some View {
-        let service = ServiceContainer.shared.gameService
-        let grid = Array(repeating: Array(repeating: false, count: 10), count: 10)
-        return GameBoardView(gameService: service, boardId: UUID())
-    }
+#Preview {
+    GameBoardView(
+        gameService: ServiceContainer.shared.gameService, 
+        repository: ServiceContainer.shared.boardRepository, 
+        boardId: UUID()
+    )
 }
