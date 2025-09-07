@@ -24,15 +24,15 @@ struct BoardListView: View {
             List {
                 ForEach(vm.boards, id: \.id) { board in
                     NavigationLink(destination: GameBoardView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, boardId: board.id)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text(board.name)
-                                Spacer()
-                                Text("\(board.width)x\(board.height)")
+                                Text("Created: \(board.createdAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            Text("Created: \(board.createdAt.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
+                            Spacer()
+                            Text("\(board.width)x\(board.height)")
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -48,14 +48,9 @@ struct BoardListView: View {
         .navigationTitle("Boards")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                HStack {
-                    Button {
-                        showingCreate = true
-                    } label: { Image(systemName: "square.grid.3x3.fill") }
-                    Button {
-                        Task { await vm.createRandomBoard(name: "Random", width: 40, height: 30, density: 0.25) }
-                    } label: { Image(systemName: "plus") }
-                }
+                Button {
+                    showingCreate = true
+                } label: { Image(systemName: "plus") }
             }
         }
         .task { await vm.load() }

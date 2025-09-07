@@ -14,7 +14,7 @@ final class BoardListViewModel: ObservableObject {
     func load() async {
         do {
             let boards = try await repository.loadAll()
-            self.boards = boards.sorted(by: { $0.createdAt < $1.createdAt })
+            self.boards = boards.sorted(by: { $0.createdAt > $1.createdAt })
         } catch {
             self.boards = []
         }
