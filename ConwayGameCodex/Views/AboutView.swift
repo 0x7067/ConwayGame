@@ -8,7 +8,7 @@ struct AboutView: View {
                     Text("Conway's Game of Life")
                         .font(.title)
                         .fontWeight(.bold)
-                    Text("Created by Pedro Guimarães")
+                    Text("A Cellular Automaton Simulator")
                         .font(.headline)
                         .foregroundColor(.secondary)
                 }
@@ -17,7 +17,9 @@ struct AboutView: View {
                     Text("About")
                         .font(.title3)
                         .fontWeight(.semibold)
-                    Text("This app simulates Conway's Game of Life, a zero-player cellular automaton where simple rules give rise to complex patterns. You can create boards, step through generations, and explore common patterns.")
+                    Text("Conway's Game of Life is a zero-player cellular automaton devised by mathematician John Conway in 1970. Despite its simple rules, it's capable of universal computation—meaning it's Turing complete and can simulate any computer program.")
+                        .lineSpacing(4)
+                    Text("This implementation lets you create boards, step through generations, explore famous patterns, and witness how complex behaviors emerge from simple rules.")
                         .lineSpacing(4)
                 }
                 
@@ -43,7 +45,7 @@ struct AboutView: View {
                     Text("Credits")
                         .font(.title3)
                         .fontWeight(.semibold)
-                    Text("Design and development by Pedro Guimarães. Built with SwiftUI.")
+                    Text("Original game concept by John Conway (1970). This iOS implementation designed and developed by Pedro Guimarães using SwiftUI.")
                         .lineSpacing(4)
                 }
                 
