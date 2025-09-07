@@ -25,6 +25,7 @@ struct GameBoardView: View {
             GameControlsView(
                 isPlaying: vm.isPlaying,
                 isLocked: vm.isFinalLocked,
+                playSpeed: $vm.playSpeed,
                 onStep: { Task { await vm.step() } },
                 onTogglePlay: { vm.isPlaying ? vm.pause() : vm.play() },
                 onJump: { gen in Task { await vm.jump(to: gen) } },

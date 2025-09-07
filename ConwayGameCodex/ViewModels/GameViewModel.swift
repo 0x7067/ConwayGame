@@ -1,11 +1,37 @@
 import Foundation
 
+enum PlaySpeed: CaseIterable {
+    case normal
+    case fast
+    case faster
+    case turbo
+    
+    var displayName: String {
+        switch self {
+        case .normal: return "1x"
+        case .fast: return "2x"
+        case .faster: return "4x"
+        case .turbo: return "8x"
+        }
+    }
+    
+    var interval: UInt64 {
+        switch self {
+        case .normal: return 500_000_000   // 0.5 seconds
+        case .fast: return 250_000_000     // 0.25 seconds
+        case .faster: return 125_000_000   // 0.125 seconds
+        case .turbo: return 62_500_000     // 0.0625 seconds (16 generations/second)
+        }
+    }
+}
+
 @MainActor
 final class GameViewModel: ObservableObject {
     @Published var state: GameState?
     @Published var isPlaying: Bool = false
     @Published var errorMessage: String?
     @Published var isFinalLocked: Bool = false
+    @Published var playSpeed: PlaySpeed = .normal
 
     private let service: GameService
     private let repository: BoardRepository
@@ -101,8 +127,8 @@ final class GameViewModel: ObservableObject {
                     await MainActor.run { self.pause() }
                     break
                 }
-                // Keep the loop responsive and fast for tests
-                try? await Task.sleep(nanoseconds: 1_000_000) // ~1 ms
+                // Use the selected play speed interval
+                try? await Task.sleep(nanoseconds: self.playSpeed.interval)
             }
         }
     }
