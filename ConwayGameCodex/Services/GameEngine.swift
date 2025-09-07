@@ -19,18 +19,17 @@ public struct GameRules {
 
     @inline(__always)
     public static func countNeighbors(_ grid: CellsGrid, x: Int, y: Int) -> Int {
-        // Finite grid, no wrapping
-        let h = grid.count
-        let w = h > 0 ? grid[0].count : 0
+        // Interpret parameters as (row, col) to match tests (x=row, y=col)
+        // Conway's Game of Life uses Moore neighborhood (8 directions)
+        let offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        let rows = grid.count
+        let cols = rows > 0 ? grid[0].count : 0
         var count = 0
-        let y0 = max(0, y - 1)
-        let y1 = min(h - 1, y + 1)
-        let x0 = max(0, x - 1)
-        let x1 = min(w - 1, x + 1)
-        for j in y0...y1 {
-            for i in x0...x1 {
-                if i == x && j == y { continue }
-                if grid[j][i] { count += 1 }
+        for (dr, dc) in offsets {
+            let nr = x + dr // x is row index
+            let nc = y + dc // y is column index
+            if nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] {
+                count += 1
             }
         }
         return count
@@ -49,7 +48,8 @@ public final class ConwayGameEngine: GameEngine {
         for y in 0..<height {
             for x in 0..<width {
                 let alive = currentState[y][x]
-                let n = GameRules.countNeighbors(currentState, x: x, y: y)
+                // countNeighbors expects (row, col) order
+                let n = GameRules.countNeighbors(currentState, x: y, y: x)
                 let willLive = GameRules.shouldCellLive(isAlive: alive, neighborCount: n)
                 next[y][x] = willLive
                 if willLive != alive { anyChange = true }
@@ -77,4 +77,3 @@ public final class ConwayGameEngine: GameEngine {
         return state
     }
 }
-

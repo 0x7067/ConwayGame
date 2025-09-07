@@ -185,13 +185,13 @@ final class GameEngineTests: XCTestCase {
             state = engine.computeNextState(state)
         }
         
-        // After 4 generations, glider should have moved diagonally
+        // After 4 generations (canonical glider phase)
         let expected: CellsGrid = [
             [false, false, false, false, false],
             [false, false, false, false, false],
-            [false, false, true,  false, false],
             [false, false, false, true,  false],
-            [false, false, true,  true,  false]
+            [false, false, false, false, true ],
+            [false, false, true,  true,  true ]
         ]
         XCTAssertEqual(state, expected)
     }
@@ -236,7 +236,7 @@ final class GameEngineTests: XCTestCase {
         ]
         let expected: CellsGrid = [
             [true,  false, true],
-            [false, false, false],
+            [true,  false, true],
             [false, true,  false]
         ]
         let result = engine.computeNextState(grid)

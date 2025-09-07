@@ -55,12 +55,13 @@ final class ConwayGameCodexTests: XCTestCase {
         ]
         // After 4 generations, it should translate by (1,1)
         for _ in 0..<4 { grid = engine.computeNextState(grid) }
+        // Canonical glider after 4 generations
         let expected: CellsGrid = [
             [false,false,false,false,false],
             [false,false,false,false,false],
-            [false,false,true, false,false],
             [false,false,false,true, false],
-            [false,false,true, true, false],
+            [false,false,false,false,true ],
+            [false,false,true, true, true ],
         ]
         XCTAssertEqual(grid, expected)
     }

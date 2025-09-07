@@ -581,8 +581,10 @@ final class BoardTests: XCTestCase {
             [false, true]
         ]
         
-        let board1 = try Board(id: UUID(), name: "Board", width: 2, height: 2, cells: cells)
-        let board2 = try Board(id: board1.id, name: "Board", width: 2, height: 2, cells: cells)
+        let id = UUID()
+        let createdAt = Date()
+        let board1 = try Board(id: id, name: "Board", width: 2, height: 2, createdAt: createdAt, cells: cells)
+        let board2 = try Board(id: id, name: "Board", width: 2, height: 2, createdAt: createdAt, cells: cells)
         
         XCTAssertEqual(board1, board2)
         XCTAssertEqual(board1.hashValue, board2.hashValue)

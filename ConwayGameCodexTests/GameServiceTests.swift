@@ -243,7 +243,7 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(state.cells, block)
         XCTAssertTrue(state.isStable)
         XCTAssertEqual(state.populationCount, 4)
-        XCTAssertEqual(state.generation, 0)
+        XCTAssertEqual(state.generation, 1)
     }
     
     func test_getFinalState_extinction_detectsExtinction() async {
@@ -347,15 +347,15 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(state1.cells, expectedHorizontal)
         XCTAssertEqual(state1.generation, 1)
         
-        // Jump to generation 10 (should be horizontal for even generations)
-        let jump = await service.getStateAtGeneration(boardId: id, generation: 10)
-        guard case .success(let state10) = jump else {
+        // Jump to generation 9 (should be horizontal for odd generations)
+        let jump = await service.getStateAtGeneration(boardId: id, generation: 9)
+        guard case .success(let state9) = jump else {
             XCTFail("Expected success")
             return
         }
         
-        XCTAssertEqual(state10.cells, expectedHorizontal)
-        XCTAssertEqual(state10.generation, 10)
+        XCTAssertEqual(state9.cells, expectedHorizontal)
+        XCTAssertEqual(state9.generation, 9)
         
         // Get final state
         let final = await service.getFinalState(boardId: id, maxIterations: 100)

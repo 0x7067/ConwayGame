@@ -15,10 +15,12 @@ struct GameControlsView: View {
         VStack(spacing: 8) {
             HStack(spacing: 20) {
                 Button(action: onStep) { Label("Step", systemImage: "arrow.right.circle") }
+                    .accessibilityIdentifier("step")
                     .disabled(isLocked)
                 Button(action: onTogglePlay) {
                     Label(isPlaying ? "Pause" : "Play", systemImage: isPlaying ? "pause.circle" : "play.circle")
                 }
+                .accessibilityIdentifier("play")
                 .disabled(isLocked)
                 if let onReset { Button(action: onReset) { Label("Reset", systemImage: "arrow.counterclockwise") } }
             }

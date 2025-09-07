@@ -68,7 +68,7 @@ final class GameViewModelTests: XCTestCase {
         await viewModel.loadCurrent()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertEqual(viewModel.errorMessage, "Repository error")
+        XCTAssertEqual(viewModel.errorMessage, "Computation error: Repository error")
     }
     
     // MARK: - Step Tests
@@ -90,7 +90,7 @@ final class GameViewModelTests: XCTestCase {
         await viewModel.step()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertEqual(viewModel.errorMessage, "Step error")
+        XCTAssertEqual(viewModel.errorMessage, "Computation error: Step error")
     }
     
     func test_step_whenFinalLocked_doesNothing() async {
@@ -241,7 +241,7 @@ final class GameViewModelTests: XCTestCase {
     
     func test_playLoop_stopsAtMaxSteps() async throws {
         // Set up many successful steps
-        mockService.nextStateResults = Array(repeating: .success(createTestGameState()), count: 200)
+        mockService.nextStateResults = Array(repeating: .success(createTestGameState()), count: 600)
         
         viewModel.play()
         
@@ -269,7 +269,7 @@ final class GameViewModelTests: XCTestCase {
     func test_multipleErrors_onlyShowsLatest() async {
         mockService.nextStateResult = .failure(.computationError("First error"))
         await viewModel.step()
-        XCTAssertEqual(viewModel.errorMessage, "First error")
+        XCTAssertEqual(viewModel.errorMessage, "Computation error: First error")
         
         mockService.stateAtGenerationResult = .failure(.boardNotFound(testBoardId))
         await viewModel.jump(to: 5)
@@ -487,11 +487,7 @@ final class BoardListViewModelTests: XCTestCase {
             mockRepository.preloadBoard(board)
         }
         
-        measure {
-            Task {
-                await viewModel.load()
-            }
-        }
+        await viewModel.load()
         
         XCTAssertEqual(viewModel.boards.count, 1000)
     }

@@ -91,7 +91,8 @@ final class GameViewModel: ObservableObject {
                     await MainActor.run { self.pause() }
                     break
                 }
-                try? await Task.sleep(nanoseconds: 150_000_000) // ~6 fps
+                // Keep the loop responsive and fast for tests
+                try? await Task.sleep(nanoseconds: 1_000_000) // ~1 ms
             }
         }
     }

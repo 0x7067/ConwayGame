@@ -16,14 +16,14 @@ struct PatternsView: View {
 
     var body: some View {
         List {
-            Section(header: Text("Common Patterns")) {
-                ForEach(patterns) { p in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(p.title).font(.headline)
-                        Text(p.description).font(.subheadline).foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 6)
+            // Make header text accessible as a regular static text for UITests
+            Text("Common Patterns").font(.headline)
+            ForEach(patterns) { p in
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(p.title).font(.headline)
+                    Text(p.description).font(.subheadline).foregroundColor(.secondary)
                 }
+                .padding(.vertical, 6)
             }
             Section(header: Text("Try Them")) {
                 Text("When creating a board, open the Patterns menu to auto-place these shapes centered on the grid.")
@@ -38,4 +38,3 @@ struct PatternsView: View {
 #Preview {
     PatternsView()
 }
-
