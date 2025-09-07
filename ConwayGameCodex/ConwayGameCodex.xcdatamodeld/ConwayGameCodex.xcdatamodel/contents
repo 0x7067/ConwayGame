@@ -9,6 +9,7 @@
         <attribute name="currentGeneration" optional="NO" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isActive" optional="NO" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="cellsData" optional="NO" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="initialCellsData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <attribute name="stateHistoryData" optional="NO" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
     </entity>
     <elements>

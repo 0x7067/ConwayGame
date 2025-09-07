@@ -10,6 +10,7 @@ public struct Board: Codable, Identifiable, Hashable {
     public var createdAt: Date
     public var currentGeneration: Int
     public var cells: CellsGrid
+    public var initialCells: CellsGrid
     public var isActive: Bool
     // State hashes for convergence/cycle detection
     public var stateHistory: [String]
@@ -22,6 +23,7 @@ public struct Board: Codable, Identifiable, Hashable {
         createdAt: Date = Date(),
         currentGeneration: Int = 0,
         cells: CellsGrid,
+        initialCells: CellsGrid? = nil,
         isActive: Bool = true,
         stateHistory: [String] = []
     ) throws {
@@ -32,6 +34,7 @@ public struct Board: Codable, Identifiable, Hashable {
         self.createdAt = createdAt
         self.currentGeneration = currentGeneration
         self.cells = cells
+        self.initialCells = initialCells ?? cells
         self.isActive = isActive
         self.stateHistory = stateHistory
         try validate()
@@ -75,4 +78,3 @@ public enum BoardHashing {
         return Data(bytes).base64EncodedString()
     }
 }
-

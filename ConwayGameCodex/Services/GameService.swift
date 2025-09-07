@@ -3,11 +3,15 @@ import OSLog
 
 public protocol GameService {
     func createBoard(_ initialState: CellsGrid, name: String) async -> Result<UUID, GameError>
+    func getCurrentState(boardId: UUID) async -> Result<GameState, GameError>
     func getNextState(boardId: UUID) async -> Result<GameState, GameError>
     func getStateAtGeneration(boardId: UUID, generation: Int) async -> Result<GameState, GameError>
     func getFinalState(boardId: UUID, maxIterations: Int) async -> Result<GameState, GameError>
     func loadBoards() async -> Result<[Board], GameError>
     func deleteBoard(id: UUID) async -> Result<Void, GameError>
+    func renameBoard(id: UUID, newName: String) async -> Result<Void, GameError>
+    func jumpToGeneration(boardId: UUID, generation: Int) async -> Result<GameState, GameError>
+    func resetBoard(boardId: UUID) async -> Result<GameState, GameError>
 }
 
 public final class DefaultGameService: GameService {
@@ -24,10 +28,25 @@ public final class DefaultGameService: GameService {
         self.maxHistory = maxHistory
     }
 
+    public func getCurrentState(boardId: UUID) async -> Result<GameState, GameError> {
+        do {
+            guard let board = try await repository.load(id: boardId) else {
+                return .failure(.boardNotFound(boardId))
+            }
+            let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let gs = GameState(boardId: board.id, generation: board.currentGeneration, cells: board.cells, isStable: false, populationCount: population)
+            return .success(gs)
+        } catch let e as GameError {
+            return .failure(e)
+        } catch {
+            return .failure(.persistenceError(String(describing: error)))
+        }
+    }
+
     public func createBoard(_ initialState: CellsGrid, name: String) async -> Result<UUID, GameError> {
         do {
             let h = BoardHashing.hash(for: initialState)
-            let board = try Board(name: name, width: initialState.first?.count ?? 0, height: initialState.count, cells: initialState, stateHistory: [h])
+            let board = try Board(name: name, width: initialState.first?.count ?? 0, height: initialState.count, cells: initialState, initialCells: initialState, stateHistory: [h])
             try await repository.save(board)
             Logger.service.info("Created board: \(board.id.uuidString)")
             return .success(board.id)
@@ -127,7 +146,8 @@ public final class DefaultGameService: GameService {
             var state = board.cells
             var history = Set(board.stateHistory)
             var gen = board.currentGeneration
-            for _ in 0..<maxIterations {
+            let capped = min(maxIterations, UIConstants.maxFinalIterations)
+            for _ in 0..<capped {
                 if Task.isCancelled { return .failure(.computationError("Cancelled")) }
                 let next = gameEngine.computeNextState(state)
                 let hash = BoardHashing.hash(for: next)
@@ -141,7 +161,7 @@ public final class DefaultGameService: GameService {
                 let gs = GameState(boardId: board.id, generation: gen, cells: state, isStable: isStable, populationCount: population)
                 return .success(gs)
             }
-            return .failure(.convergenceTimeout(maxIterations: maxIterations))
+            return .failure(.convergenceTimeout(maxIterations: capped))
         } catch let e as GameError {
             return .failure(e)
         } catch {
@@ -156,6 +176,53 @@ public final class DefaultGameService: GameService {
 
     public func deleteBoard(id: UUID) async -> Result<Void, GameError> {
         do { try await repository.delete(id: id); return .success(()) }
+        catch { return .failure(.persistenceError(String(describing: error))) }
+    }
+
+    public func renameBoard(id: UUID, newName: String) async -> Result<Void, GameError> {
+        do {
+            guard var board = try await repository.load(id: id) else { return .failure(.boardNotFound(id)) }
+            board.name = newName
+            try await repository.save(board)
+            return .success(())
+        } catch let e as GameError { return .failure(e) }
+        catch { return .failure(.persistenceError(String(describing: error))) }
+    }
+
+    public func jumpToGeneration(boardId: UUID, generation: Int) async -> Result<GameState, GameError> {
+        // Compute state at generation and persist as current so next step continues from here
+        switch await getStateAtGeneration(boardId: boardId, generation: min(generation, UIConstants.maxJumpGeneration)) {
+        case .failure(let e): return .failure(e)
+        case .success(let gs):
+            do {
+                guard var board = try await repository.load(id: boardId) else { return .failure(.boardNotFound(boardId)) }
+                board.cells = gs.cells
+                board.currentGeneration = gs.generation
+                // Keep minimal history: initial + current hash
+                if let first = board.stateHistory.first {
+                    board.stateHistory = [first, BoardHashing.hash(for: gs.cells)]
+                } else {
+                    board.stateHistory = [BoardHashing.hash(for: gs.cells)]
+                }
+                try await repository.save(board)
+                return .success(gs)
+            } catch let e as GameError { return .failure(e) }
+            catch { return .failure(.persistenceError(String(describing: error))) }
+        }
+    }
+
+    public func resetBoard(boardId: UUID) async -> Result<GameState, GameError> {
+        do {
+            guard var board = try await repository.load(id: boardId) else { return .failure(.boardNotFound(boardId)) }
+            board.cells = board.initialCells
+            board.currentGeneration = 0
+            let h = BoardHashing.hash(for: board.initialCells)
+            board.stateHistory = [h]
+            try await repository.save(board)
+            let population = board.initialCells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let gs = GameState(boardId: board.id, generation: 0, cells: board.initialCells, isStable: false, populationCount: population)
+            return .success(gs)
+        } catch let e as GameError { return .failure(e) }
         catch { return .failure(.persistenceError(String(describing: error))) }
     }
 }

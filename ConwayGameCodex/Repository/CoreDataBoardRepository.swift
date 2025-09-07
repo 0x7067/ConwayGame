@@ -69,6 +69,7 @@ final class CoreDataBoardRepository: BoardRepository {
             entity.setValue(Int32(board.currentGeneration), forKey: "currentGeneration")
             entity.setValue(board.isActive, forKey: "isActive")
             entity.setValue(self.encodeCells(board.cells), forKey: "cellsData")
+            entity.setValue(self.encodeCells(board.initialCells), forKey: "initialCellsData")
             entity.setValue(try self.encodeHistory(board.stateHistory), forKey: "stateHistoryData")
             do { try context.save(); Logger.persistence.info("Saved board \(board.id.uuidString)") }
             catch { Logger.persistence.error("Save error: \(String(describing: error))"); throw error }
@@ -116,8 +117,9 @@ final class CoreDataBoardRepository: BoardRepository {
         let cellsData = obj.value(forKey: "cellsData") as! Data
         let historyData = obj.value(forKey: "stateHistoryData") as! Data
         let cells = decodeCells(data: cellsData, width: width, height: height)
+        let initialCellsData = (obj.value(forKey: "initialCellsData") as? Data) ?? cellsData
+        let initialCells = decodeCells(data: initialCellsData, width: width, height: height)
         let history = try decodeHistory(historyData)
-        return try Board(id: id, name: name, width: width, height: height, createdAt: createdAt, currentGeneration: currentGeneration, cells: cells, isActive: isActive, stateHistory: history)
+        return try Board(id: id, name: name, width: width, height: height, createdAt: createdAt, currentGeneration: currentGeneration, cells: cells, initialCells: initialCells, isActive: isActive, stateHistory: history)
     }
 }
-

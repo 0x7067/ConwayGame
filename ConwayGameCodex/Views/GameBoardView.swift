@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameBoardView: View {
     @StateObject private var vm: GameViewModel
+    @State private var showGrid: Bool = true
 
     init(gameService: GameService, boardId: UUID) {
         _vm = StateObject(wrappedValue: GameViewModel(service: gameService, boardId: boardId))
@@ -10,7 +11,7 @@ struct GameBoardView: View {
     var body: some View {
         VStack(spacing: 12) {
             if let state = vm.state {
-                BoardGrid(cells: state.cells)
+                BoardGrid(cells: state.cells, showGrid: showGrid)
                     .aspectRatio(contentMode: .fit)
                     .padding(.horizontal)
                 HStack {
@@ -19,19 +20,23 @@ struct GameBoardView: View {
                     Text("Pop: \(state.populationCount)")
                 }.padding(.horizontal)
             } else {
-                Text("No state yet. Tap Step.")
+                Text("Loading board…")
             }
             GameControlsView(
                 isPlaying: vm.isPlaying,
+                isLocked: vm.isFinalLocked,
                 onStep: { Task { await vm.step() } },
                 onTogglePlay: { vm.isPlaying ? vm.pause() : vm.play() },
                 onJump: { gen in Task { await vm.jump(to: gen) } },
-                onFinal: { maxIters in Task { await vm.finalState(maxIterations: maxIters) } }
+                onFinal: { maxIters in Task { await vm.finalState(maxIterations: maxIters) } },
+                onReset: { Task { await vm.reset() } }
             )
             .padding(.bottom)
         }
         .navigationTitle("Game")
+        .toolbar { Toggle(isOn: $showGrid) { Image(systemName: showGrid ? "square.grid.3x3" : "square") } }
         .onDisappear { vm.pause() }
+        .task { await vm.loadCurrent() }
         .alert("Error", isPresented: .constant(vm.errorMessage != nil), presenting: vm.errorMessage) { _ in
             Button("OK") { vm.errorMessage = nil }
         } message: { msg in Text(msg) }
@@ -40,6 +45,7 @@ struct GameBoardView: View {
 
 private struct BoardGrid: View {
     let cells: CellsGrid
+    let showGrid: Bool
     var body: some View {
         GeometryReader { geo in
             let h = cells.count
@@ -54,6 +60,22 @@ private struct BoardGrid: View {
                             ctx.fill(Path(rect), with: .color(.accentColor))
                         }
                     }
+                }
+                if showGrid {
+                    var path = Path()
+                    // Vertical lines
+                    for x in 0...w {
+                        let px = CGFloat(x) * cellW
+                        path.move(to: CGPoint(x: px, y: 0))
+                        path.addLine(to: CGPoint(x: px, y: CGFloat(h) * cellH))
+                    }
+                    // Horizontal lines
+                    for y in 0...h {
+                        let py = CGFloat(y) * cellH
+                        path.move(to: CGPoint(x: 0, y: py))
+                        path.addLine(to: CGPoint(x: CGFloat(w) * cellW, y: py))
+                    }
+                    ctx.stroke(path, with: .color(.secondary.opacity(0.25)), lineWidth: 0.5)
                 }
             }
             .frame(height: CGFloat(h) * cellH)

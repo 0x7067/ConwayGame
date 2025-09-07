@@ -13,7 +13,7 @@ struct ConwayGameCodexApp: App {
 
     var body: some Scene {
         WindowGroup {
-            BoardListView(gameService: ServiceContainer.shared.gameService)
+            RootView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
