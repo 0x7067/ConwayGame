@@ -1,4 +1,5 @@
 import Foundation
+import ConwayGameEngine
 
 public protocol BoardRepository {
     func save(_ board: Board) async throws

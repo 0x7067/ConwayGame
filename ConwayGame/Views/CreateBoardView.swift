@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct CopyBoardData {
     let name: String
@@ -54,45 +55,27 @@ struct CreateBoardView: View {
         }
     }
 
-    private func applyPattern(_ pattern: PredefinedPattern) {
+    private func applyPattern(_ pattern: Pattern) {
         var grid = Array(repeating: Array(repeating: false, count: width), count: height)
-        let pts = pattern.offsets
-        guard !pts.isEmpty else { 
-            cells = grid
-            return 
-        }
+        let patternCells = pattern.cells
+        let patternHeight = patternCells.count
+        let patternWidth = patternHeight > 0 ? patternCells[0].count : 0
         
-        let bounds = calculatePatternBounds(pts)
-        let startPosition = calculateCenteredPosition(bounds)
+        // Center the pattern on the board
+        let offsetY = (height - patternHeight) / 2
+        let offsetX = (width - patternWidth) / 2
         
-        for (x, y) in pts {
-            let gridX = x + startPosition.x
-            let gridY = y + startPosition.y
-            if isValidPosition(x: gridX, y: gridY) {
-                grid[gridY][gridX] = true
+        for y in 0..<patternHeight {
+            for x in 0..<patternWidth {
+                let targetY = offsetY + y
+                let targetX = offsetX + x
+                if targetY >= 0 && targetY < height && targetX >= 0 && targetX < width {
+                    grid[targetY][targetX] = patternCells[y][x]
+                }
             }
         }
+        
         cells = grid
-    }
-    
-    private func calculatePatternBounds(_ points: [(Int, Int)]) -> (minX: Int, maxX: Int, minY: Int, maxY: Int, width: Int, height: Int) {
-        let minX = points.map { $0.0 }.min() ?? 0
-        let maxX = points.map { $0.0 }.max() ?? 0
-        let minY = points.map { $0.1 }.min() ?? 0
-        let maxY = points.map { $0.1 }.max() ?? 0
-        let width = maxX - minX + 1
-        let height = maxY - minY + 1
-        return (minX, maxX, minY, maxY, width, height)
-    }
-    
-    private func calculateCenteredPosition(_ bounds: (minX: Int, maxX: Int, minY: Int, maxY: Int, width: Int, height: Int)) -> (x: Int, y: Int) {
-        let startX = max(0, (width - bounds.width) / 2) - bounds.minX
-        let startY = max(0, (height - bounds.height) / 2) - bounds.minY
-        return (startX, startY)
-    }
-    
-    private func isValidPosition(x: Int, y: Int) -> Bool {
-        x >= 0 && x < width && y >= 0 && y < height
     }
 
     var body: some View {

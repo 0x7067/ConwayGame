@@ -22,4 +22,3 @@ public enum GameError: LocalizedError, Equatable, Sendable {
         }
     }
 }
-

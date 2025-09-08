@@ -28,9 +28,11 @@ struct AboutView: View {
                     Text("Conway's Game of Life")
                         .font(.title)
                         .fontWeight(.bold)
+                        .accessibilityIdentifier("about-title")
                     Text("A Cellular Automaton Simulator")
                         .font(.headline)
                         .foregroundColor(.secondary)
+                        .accessibilityIdentifier("about-subtitle")
                 }
                 
                 VStack(alignment: .leading, spacing: 12) {
@@ -89,6 +91,7 @@ struct AboutView: View {
             .padding(20)
         }
         .navigationTitle("About")
+        .accessibilityIdentifier("about-view")
         .alert("Email Copied", isPresented: $showingCopiedAlert) {
             Button("OK", role: .cancel) { }
         } message: {

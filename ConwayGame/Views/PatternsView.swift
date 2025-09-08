@@ -1,28 +1,33 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct PatternsView: View {
     struct PatternInfo: Identifiable {
         let id = UUID()
         let title: String
         let description: String
-        let patterns: [PredefinedPattern]
+        let patterns: [Pattern]
         let boardSize: Int
     }
 
     private let patternGroups: [PatternInfo] = [
-        PatternInfo(title: "Still lifes", description: "Stable shapes that do not change from one generation to the next.", patterns: [.block, .beehive], boardSize: 8),
-        PatternInfo(title: "Oscillators", description: "Patterns that repeat after a finite number of steps.", patterns: [.blinker, .toad, .beacon], boardSize: 8),
-        PatternInfo(title: "Spaceships", description: "Patterns that move across the board while maintaining their shape.", patterns: [.glider], boardSize: 8),
+        PatternInfo(title: "Still Lifes", description: "Stable shapes that do not change from one generation to the next.", patterns: Pattern.in(category: .stillLife), boardSize: 8),
+        PatternInfo(title: "Oscillators", description: "Patterns that repeat after a finite number of steps.", patterns: Pattern.in(category: .oscillator), boardSize: 8),
+        PatternInfo(title: "Spaceships", description: "Patterns that move across the board while maintaining their shape.", patterns: Pattern.in(category: .spaceship), boardSize: 8),
+        PatternInfo(title: "Guns", description: "Patterns that continuously produce other patterns.", patterns: Pattern.in(category: .gun), boardSize: 20),
     ]
 
     var body: some View {
         List {
             Text("Common Patterns").font(.headline)
+                .accessibilityIdentifier("patterns-header")
             
             ForEach(patternGroups) { group in
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
                     Text(group.title).font(.headline)
+                        .accessibilityIdentifier("group-\(group.title.lowercased().replacingOccurrences(of: " ", with: "-"))")
                     Text(group.description).font(.subheadline).foregroundColor(.secondary)
+                        .accessibilityIdentifier("group-description-\(group.title.lowercased().replacingOccurrences(of: " ", with: "-"))")
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: DesignTokens.Spacing.lg) {
@@ -45,19 +50,21 @@ struct PatternsView: View {
                 .padding(.vertical, DesignTokens.Spacing.sm)
             }
             
-            Section(header: Text("Try Them")) {
+            Section(header: Text("Try Them").accessibilityIdentifier("try-them-header")) {
                 Text("When creating a board, open the Patterns menu to auto-place these shapes centered on the grid.")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+                    .accessibilityIdentifier("try-them-description")
             }
         }
         .navigationTitle("Patterns")
+        .accessibilityIdentifier("patterns-view")
     }
 }
 
 // Animated pattern display that reuses existing components
 private struct AnimatedPatternView: View {
-    let pattern: PredefinedPattern
+    let pattern: Pattern
     let boardSize: Int
     
     @State private var currentState: CellsGrid
@@ -65,21 +72,28 @@ private struct AnimatedPatternView: View {
     private let engine = ConwayGameEngine()
     private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
     
-    init(pattern: PredefinedPattern, boardSize: Int) {
+    init(pattern: Pattern, boardSize: Int) {
         self.pattern = pattern
         self.boardSize = boardSize
         
-        // Initialize the pattern on the board
-        var grid = Array(repeating: Array(repeating: false, count: boardSize), count: boardSize)
-        let offsets = pattern.offsets
-        let centerX = boardSize / 2
-        let centerY = boardSize / 2
+        // Initialize the pattern centered on the board
+        let patternCells = pattern.cells
+        let patternHeight = patternCells.count
+        let patternWidth = patternHeight > 0 ? patternCells[0].count : 0
         
-        for (x, y) in offsets {
-            let gridX = centerX + x - 1
-            let gridY = centerY + y - 1
-            if gridX >= 0 && gridX < boardSize && gridY >= 0 && gridY < boardSize {
-                grid[gridY][gridX] = true
+        var grid = Array(repeating: Array(repeating: false, count: boardSize), count: boardSize)
+        
+        // Center the pattern
+        let offsetY = (boardSize - patternHeight) / 2
+        let offsetX = (boardSize - patternWidth) / 2
+        
+        for y in 0..<patternHeight {
+            for x in 0..<patternWidth {
+                let targetY = offsetY + y
+                let targetX = offsetX + x
+                if targetY >= 0 && targetY < boardSize && targetX >= 0 && targetX < boardSize {
+                    grid[targetY][targetX] = patternCells[y][x]
+                }
             }
         }
         
@@ -93,7 +107,7 @@ private struct AnimatedPatternView: View {
                 let nextState = engine.computeNextState(currentState)
                 
                 // For still lifes, don't animate
-                if pattern == .block || pattern == .beehive {
+                if pattern.category == .stillLife {
                     return
                 }
                 
@@ -114,25 +128,36 @@ private struct AnimatedPatternView: View {
         switch pattern {
         case .blinker, .toad, .beacon:
             return 2 // Period 2 oscillators
+        case .pulsar:
+            return 3 // Period 3 oscillator
         case .glider:
             return 4 // Glider cycle
         default:
-            return 1
+            return 20 // For guns, show a longer cycle
         }
     }
     
     private func resetToInitialState() {
         generation = 0
-        var grid = Array(repeating: Array(repeating: false, count: boardSize), count: boardSize)
-        let offsets = pattern.offsets
-        let centerX = boardSize / 2
-        let centerY = boardSize / 2
         
-        for (x, y) in offsets {
-            let gridX = centerX + x - 1
-            let gridY = centerY + y - 1
-            if gridX >= 0 && gridX < boardSize && gridY >= 0 && gridY < boardSize {
-                grid[gridY][gridX] = true
+        // Recreate the initial pattern
+        let patternCells = pattern.cells
+        let patternHeight = patternCells.count
+        let patternWidth = patternHeight > 0 ? patternCells[0].count : 0
+        
+        var grid = Array(repeating: Array(repeating: false, count: boardSize), count: boardSize)
+        
+        // Center the pattern
+        let offsetY = (boardSize - patternHeight) / 2
+        let offsetX = (boardSize - patternWidth) / 2
+        
+        for y in 0..<patternHeight {
+            for x in 0..<patternWidth {
+                let targetY = offsetY + y
+                let targetX = offsetX + x
+                if targetY >= 0 && targetY < boardSize && targetX >= 0 && targetX < boardSize {
+                    grid[targetY][targetX] = patternCells[y][x]
+                }
             }
         }
         

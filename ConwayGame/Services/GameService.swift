@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import ConwayGameEngine
 
 public protocol GameService {
     func createBoard(_ initialState: CellsGrid) async -> UUID

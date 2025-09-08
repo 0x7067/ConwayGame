@@ -1,7 +1,7 @@
 import Foundation
 
 public protocol ConvergenceDetector {
-    // Checks convergence against a provided state history set.
+    /// Checks convergence against a provided state history set.
     func checkConvergence(_ state: CellsGrid, history: Set<String>) -> ConvergenceType
 }
 
@@ -25,4 +25,3 @@ public final class DefaultConvergenceDetector: ConvergenceDetector {
         return true
     }
 }
-

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */ = {isa = PBXBuildFile; productRef = EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		EB809C352E6DE86900294052 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = ConwayGame;
 			packageProductDependencies = (
+				EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */,
 			);
 			productName = ConwayGame;
 			productReference = EB809C222E6DE86800294052 /* ConwayGame.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = EB809C192E6DE86800294052;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				EBFEB2F12E6F2052001C4BEC /* XCLocalSwiftPackageReference "ConwayGameEngine" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EB809C232E6DE86800294052 /* Products */;
 			projectDirPath = "";
@@ -558,6 +567,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		EBFEB2F12E6F2052001C4BEC /* XCLocalSwiftPackageReference "ConwayGameEngine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ConwayGameEngine;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ConwayGameEngine;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = EB809C1A2E6DE86800294052 /* Project object */;
 }

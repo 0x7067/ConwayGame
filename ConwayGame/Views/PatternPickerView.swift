@@ -1,17 +1,24 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct PatternPickerView: View {
-    let onSelect: (PredefinedPattern) -> Void
+    let onSelect: (Pattern) -> Void
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         List {
-            ForEach(PredefinedPattern.allCases) { p in
+            ForEach(Pattern.allCases) { pattern in
                 Button(action: {
-                    onSelect(p)
+                    onSelect(pattern)
                     dismiss()
                 }) {
-                    Text(p.displayName)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(pattern.displayName)
+                            .font(.headline)
+                        Text(pattern.description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }

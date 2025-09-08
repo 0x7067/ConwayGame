@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import ConwayGameEngine
 @testable import ConwayGame
 
 final class ConwayGameTests: XCTestCase {

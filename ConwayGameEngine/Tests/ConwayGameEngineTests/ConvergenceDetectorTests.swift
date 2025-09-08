@@ -1,6 +1,5 @@
 import XCTest
-import ConwayGameEngine
-@testable import ConwayGame
+@testable import ConwayGameEngine
 
 final class ConvergenceDetectorTests: XCTestCase {
     private var detector: DefaultConvergenceDetector!

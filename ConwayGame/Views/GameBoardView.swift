@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct GameBoardView: View {
     @StateObject private var vm: GameViewModel
@@ -50,6 +51,7 @@ struct GameBoardView: View {
             .padding(.bottom)
         }
         .navigationTitle("Game")
+        .accessibilityIdentifier("game-board-view")
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {

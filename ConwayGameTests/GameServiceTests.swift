@@ -1,4 +1,5 @@
 import XCTest
+import ConwayGameEngine
 @testable import ConwayGame
 
 final class GameServiceTests: XCTestCase {

@@ -1,4 +1,5 @@
 import Foundation
+import ConwayGameEngine
 
 final class ServiceContainer {
     static let shared = ServiceContainer()

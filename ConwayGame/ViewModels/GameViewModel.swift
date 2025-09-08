@@ -1,4 +1,5 @@
 import Foundation
+import ConwayGameEngine
 
 @MainActor
 final class GameViewModel: ObservableObject {

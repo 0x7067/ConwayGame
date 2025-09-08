@@ -1,6 +1,7 @@
 import Foundation
 import CoreData
 import OSLog
+import ConwayGameEngine
 
 final class CoreDataBoardRepository: BoardRepository {
     private let container: NSPersistentContainer
