@@ -5,15 +5,16 @@ struct GameBoardView: View {
     @State private var showGrid: Bool = true
     @State private var showingCopySheet = false
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     @Binding var navigationPath: NavigationPath
 
     let gameService: GameService
     let repository: BoardRepository
 
-    init(gameService: GameService, repository: BoardRepository, boardId: UUID, navigationPath: Binding<NavigationPath>) {
+    init(gameService: GameService, repository: BoardRepository, boardId: UUID, navigationPath: Binding<NavigationPath>, themeManager: ThemeManager) {
         self.gameService = gameService
         self.repository = repository
-        _vm = StateObject(wrappedValue: GameViewModel(service: gameService, repository: repository, boardId: boardId))
+        _vm = StateObject(wrappedValue: GameViewModel(service: gameService, repository: repository, boardId: boardId, themeManager: themeManager))
         _navigationPath = navigationPath
     }
     
@@ -144,7 +145,8 @@ private struct BoardGrid: View {
             gameService: ServiceContainer.shared.gameService, 
             repository: ServiceContainer.shared.boardRepository, 
             boardId: UUID(),
-            navigationPath: $path
+            navigationPath: $path,
+            themeManager: ThemeManager()
         )
     }
 }

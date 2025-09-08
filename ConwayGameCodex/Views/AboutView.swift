@@ -1,6 +1,26 @@
 import SwiftUI
 
 struct AboutView: View {
+    @EnvironmentObject private var themeManager: ThemeManager
+    @State private var showingCopiedAlert = false
+    
+    private func createMailtoURL() -> URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = "moisespedro15@gmail.com"
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "Hi, Pedro! I would like to talk ;)")
+        ]
+        return components.url
+    }
+    
+    private func copyEmailToClipboard() {
+        #if os(iOS)
+        UIPasteboard.general.string = "moisespedro15@gmail.com"
+        showingCopiedAlert = true
+        #endif
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -47,6 +67,21 @@ struct AboutView: View {
                         .fontWeight(.semibold)
                     Text("Original game concept by John Conway (1970). This iOS implementation designed and developed by Pedro Guimarães using SwiftUI.")
                         .lineSpacing(4)
+                    
+                    HStack {
+                        Text("Contact me: ")
+                        if let mailtoURL = createMailtoURL() {
+                            Link("moisespedro15@gmail.com", destination: mailtoURL)
+                                .foregroundColor(.blue)
+                        } else {
+                            Text("moisespedro15@gmail.com")
+                                .foregroundColor(.blue)
+                                .onTapGesture {
+                                    copyEmailToClipboard()
+                                }
+                        }
+                    }
+                    .padding(.top, 8)
                 }
                 
                 Spacer(minLength: 40)
@@ -54,6 +89,11 @@ struct AboutView: View {
             .padding(20)
         }
         .navigationTitle("About")
+        .alert("Email Copied", isPresented: $showingCopiedAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Email address copied to clipboard")
+        }
     }
 }
 

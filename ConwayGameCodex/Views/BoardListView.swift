@@ -7,6 +7,7 @@ struct BoardListView: View {
     @State private var renamingBoard: Board?
     @State private var newName: String = ""
     @State private var showingCreate: Bool = false
+    @EnvironmentObject private var themeManager: ThemeManager
     @Binding var navigationPath: NavigationPath
 
     init(gameService: GameService, repository: BoardRepository, navigationPath: Binding<NavigationPath>) {
@@ -59,7 +60,8 @@ struct BoardListView: View {
                 gameService: ServiceContainer.shared.gameService,
                 repository: ServiceContainer.shared.boardRepository,
                 boardId: boardId,
-                navigationPath: $navigationPath
+                navigationPath: $navigationPath,
+                themeManager: themeManager
             )
         }
         .toolbar {

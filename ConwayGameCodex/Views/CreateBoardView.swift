@@ -7,6 +7,7 @@ struct CopyBoardData {
 
 struct CreateBoardView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     @State private var name: String = "New Board"
     @State private var width: Int = 15
     @State private var height: Int = 15
@@ -35,6 +36,13 @@ struct CreateBoardView: View {
         }
         
         cells = newCells
+    }
+    
+    private func setupDefaults() {
+        let defaultSize = themeManager.defaultBoardSize
+        width = defaultSize
+        height = defaultSize
+        cells = Array(repeating: Array(repeating: false, count: defaultSize), count: defaultSize)
     }
     
     private func setupCopyData() {
@@ -111,7 +119,12 @@ struct CreateBoardView: View {
         } message: { msg in Text(msg) }
         .onChange(of: width) { resizeGrid() }
         .onChange(of: height) { resizeGrid() }
-        .onAppear { setupCopyData() }
+        .onAppear { 
+            if copyFromBoard == nil {
+                setupDefaults()
+            }
+            setupCopyData() 
+        }
     }
 }
 

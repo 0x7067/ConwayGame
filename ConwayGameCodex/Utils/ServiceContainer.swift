@@ -5,6 +5,7 @@ final class ServiceContainer {
 
     let gameService: GameService
     let boardRepository: BoardRepository
+    let themeManager: ThemeManager
 
     private init() {
         let engine = ConwayGameEngine()
@@ -12,5 +13,6 @@ final class ServiceContainer {
         let repo = CoreDataBoardRepository(container: PersistenceController.shared.container)
         self.boardRepository = repo
         self.gameService = DefaultGameService(gameEngine: engine, repository: repo, convergenceDetector: detector)
+        self.themeManager = ThemeManager()
     }
 }

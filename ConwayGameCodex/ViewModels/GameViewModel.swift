@@ -1,30 +1,5 @@
 import Foundation
 
-enum PlaySpeed: CaseIterable {
-    case normal
-    case fast
-    case faster
-    case turbo
-    
-    var displayName: String {
-        switch self {
-        case .normal: return "1x"
-        case .fast: return "2x"
-        case .faster: return "4x"
-        case .turbo: return "8x"
-        }
-    }
-    
-    var interval: UInt64 {
-        switch self {
-        case .normal: return 500_000_000   // 0.5 seconds
-        case .fast: return 250_000_000     // 0.25 seconds
-        case .faster: return 125_000_000   // 0.125 seconds
-        case .turbo: return 62_500_000     // 0.0625 seconds (16 generations/second)
-        }
-    }
-}
-
 @MainActor
 final class GameViewModel: ObservableObject {
     @Published var state: GameState?
@@ -37,16 +12,19 @@ final class GameViewModel: ObservableObject {
     private let service: GameService
     private let repository: BoardRepository
     private let boardId: UUID
+    private let themeManager: ThemeManager
     private var playTask: Task<Void, Never>?
     private var stepsThisRun: Int = 0
     
     // Configurable for testing, defaults to production value
     var maxAutoStepsPerRun: Int = UIConstants.maxAutoStepsPerRun
 
-    init(service: GameService, repository: BoardRepository, boardId: UUID) {
+    init(service: GameService, repository: BoardRepository, boardId: UUID, themeManager: ThemeManager) {
         self.service = service
         self.repository = repository
         self.boardId = boardId
+        self.themeManager = themeManager
+        self.playSpeed = themeManager.defaultPlaySpeed
     }
 
     var currentBoardId: UUID {
