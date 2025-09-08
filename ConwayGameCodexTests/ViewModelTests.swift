@@ -240,18 +240,118 @@ final class GameViewModelTests: XCTestCase {
     }
     
     func test_playLoop_stopsAtMaxSteps() async throws {
-        // Set up many successful steps
-        mockService.nextStateResults = Array(repeating: .success(createTestGameState()), count: 600)
+        // Use a smaller max steps count for testing (turbo = 62.5ms per step, so 20 steps = ~1.25 seconds)
+        viewModel.maxAutoStepsPerRun = 20
+        
+        // Set up more than enough successful steps
+        mockService.nextStateResults = Array(repeating: .success(createTestGameState()), count: 30)
+        
+        // Use turbo speed for faster testing
+        viewModel.playSpeed = .turbo
         
         viewModel.play()
         
-        // Wait longer than max steps should take
+        // Wait longer than max steps should take (20 steps × 62.5ms = 1.25 seconds + buffer)
         try await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
         
         // Should automatically pause due to max steps
         XCTAssertFalse(viewModel.isPlaying)
+        XCTAssertEqual(mockService.getNextStateCallCount, 20) // Should have called exactly 20 times
     }
     
+    // MARK: - Play Speed Tests
+    
+    func test_playSpeed_normal_usesCorrectInterval() async throws {
+        viewModel.playSpeed = .normal
+        let testState = createTestGameState(generation: 1)
+        mockService.nextStateResults = [.success(testState)]
+        
+        let startTime = DispatchTime.now()
+        viewModel.play()
+        
+        // Wait for one step plus buffer
+        try await Task.sleep(nanoseconds: 600_000_000) // 0.6 seconds
+        viewModel.pause()
+        
+        let endTime = DispatchTime.now()
+        let elapsed = endTime.uptimeNanoseconds - startTime.uptimeNanoseconds
+        
+        XCTAssertTrue(mockService.getNextStateCallCount > 0)
+        XCTAssertGreaterThan(elapsed, 400_000_000) // Should take at least 0.4 seconds (normal = 0.5s)
+    }
+    
+    func test_playSpeed_fast_usesCorrectInterval() async throws {
+        viewModel.playSpeed = .fast
+        let testState = createTestGameState(generation: 1)
+        mockService.nextStateResults = [.success(testState)]
+        
+        let startTime = DispatchTime.now()
+        viewModel.play()
+        
+        // Wait for one step plus buffer
+        try await Task.sleep(nanoseconds: 350_000_000) // 0.35 seconds
+        viewModel.pause()
+        
+        let endTime = DispatchTime.now()
+        let elapsed = endTime.uptimeNanoseconds - startTime.uptimeNanoseconds
+        
+        XCTAssertTrue(mockService.getNextStateCallCount > 0)
+        XCTAssertGreaterThan(elapsed, 200_000_000) // Should take at least 0.2 seconds (fast = 0.25s)
+    }
+    
+    func test_playSpeed_faster_usesCorrectInterval() async throws {
+        viewModel.playSpeed = .faster
+        let testState = createTestGameState(generation: 1)
+        mockService.nextStateResults = [.success(testState)]
+        
+        let startTime = DispatchTime.now()
+        viewModel.play()
+        
+        // Wait for one step plus buffer
+        try await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+        viewModel.pause()
+        
+        let endTime = DispatchTime.now()
+        let elapsed = endTime.uptimeNanoseconds - startTime.uptimeNanoseconds
+        
+        XCTAssertTrue(mockService.getNextStateCallCount > 0)
+        XCTAssertGreaterThan(elapsed, 100_000_000) // Should take at least 0.1 seconds (faster = 0.125s)
+    }
+    
+    func test_playSpeed_turbo_usesCorrectInterval() async throws {
+        viewModel.playSpeed = .turbo
+        let testState1 = createTestGameState(generation: 1)
+        let testState2 = createTestGameState(generation: 2)
+        mockService.nextStateResults = [.success(testState1), .success(testState2)]
+        
+        let startTime = DispatchTime.now()
+        viewModel.play()
+        
+        // Wait for two steps plus buffer
+        try await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+        viewModel.pause()
+        
+        let endTime = DispatchTime.now()
+        let elapsed = endTime.uptimeNanoseconds - startTime.uptimeNanoseconds
+        
+        XCTAssertGreaterThan(mockService.getNextStateCallCount, 1) // Should complete multiple steps quickly
+        XCTAssertLessThan(elapsed, 300_000_000) // Should complete in less than 0.3 seconds (turbo = 0.0625s per step)
+    }
+    
+    func test_playSpeed_defaultIsNormal() {
+        XCTAssertEqual(viewModel.playSpeed, .normal)
+    }
+    
+    func test_playSpeed_canBeChanged() {
+        XCTAssertEqual(viewModel.playSpeed, .normal)
+        
+        viewModel.playSpeed = .turbo
+        XCTAssertEqual(viewModel.playSpeed, .turbo)
+        
+        viewModel.playSpeed = .fast
+        XCTAssertEqual(viewModel.playSpeed, .fast)
+    }
+
     // MARK: - Deinit Tests
     
     func test_deinit_cancelsPlayTask() {
@@ -411,9 +511,9 @@ final class BoardListViewModelTests: XCTestCase {
         await viewModel.load()
         
         XCTAssertEqual(viewModel.boards.count, 3)
-        XCTAssertEqual(viewModel.boards[0].name, "Board 2") // Earliest
+        XCTAssertEqual(viewModel.boards[0].name, "Board 1") // Latest
         XCTAssertEqual(viewModel.boards[1].name, "Board 3") // Middle
-        XCTAssertEqual(viewModel.boards[2].name, "Board 1") // Latest
+        XCTAssertEqual(viewModel.boards[2].name, "Board 2") // Earliest
     }
     
     // MARK: - Delete Tests

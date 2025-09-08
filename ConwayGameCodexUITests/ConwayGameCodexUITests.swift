@@ -91,11 +91,20 @@ final class ConwayGameCodexUITests: XCTestCase {
         // Should show patterns information
         XCTAssertTrue(app.staticTexts["Common Patterns"].exists)
         
-        // Should show some pattern names
-        let patternNames = ["Still lifes", "Oscillators", "Glider"]
-        for patternName in patternNames {
-            XCTAssertTrue(app.staticTexts[patternName].exists)
+        // Should show pattern group names
+        let groupNames = ["Still lifes", "Oscillators", "Spaceships"]
+        for groupName in groupNames {
+            XCTAssertTrue(app.staticTexts[groupName].exists, "Group '\(groupName)' should be visible")
         }
+        
+        // Should show individual pattern names using accessibility identifiers
+        let patternIdentifiers = ["pattern-block", "pattern-beehive", "pattern-blinker", "pattern-toad", "pattern-beacon", "pattern-glider"]
+        for identifier in patternIdentifiers {
+            XCTAssertTrue(app.staticTexts[identifier].exists, "Pattern with identifier '\(identifier)' should be visible")
+        }
+        
+        // Should show the "Try Them" section
+        XCTAssertTrue(app.staticTexts["Try Them"].exists)
     }
     
     // MARK: - About Tab Tests
@@ -104,14 +113,18 @@ final class ConwayGameCodexUITests: XCTestCase {
     func test_aboutTab_showsAppInformation() throws {
         app.tabBars.buttons["About"].tap()
         
-        // Should show app title and basic info
+        // Should show app title and subtitle
         XCTAssertTrue(app.staticTexts["Conway's Game of Life"].exists)
-        XCTAssertTrue(app.staticTexts["Created by Pedro Guimarães"].exists)
+        XCTAssertTrue(app.staticTexts["A Cellular Automaton Simulator"].exists)
         
-        // Should show sections
+        // Should show main sections
         XCTAssertTrue(app.staticTexts["About"].exists)
         XCTAssertTrue(app.staticTexts["How It Works"].exists)
         XCTAssertTrue(app.staticTexts["Credits"].exists)
+        
+        // Should show key information about Conway's Game
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'John Conway'")).element.exists)
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Turing complete'")).element.exists)
     }
     
     // MARK: - Game Flow Tests (if boards exist)

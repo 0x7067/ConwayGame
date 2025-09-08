@@ -38,6 +38,9 @@ final class GameViewModel: ObservableObject {
     private let boardId: UUID
     private var playTask: Task<Void, Never>?
     private var stepsThisRun: Int = 0
+    
+    // Configurable for testing, defaults to production value
+    var maxAutoStepsPerRun: Int = UIConstants.maxAutoStepsPerRun
 
     init(service: GameService, repository: BoardRepository, boardId: UUID) {
         self.service = service
@@ -123,7 +126,7 @@ final class GameViewModel: ObservableObject {
             while !Task.isCancelled && self.isPlaying {
                 await self.step()
                 self.stepsThisRun += 1
-                if self.stepsThisRun >= UIConstants.maxAutoStepsPerRun {
+                if self.stepsThisRun >= self.maxAutoStepsPerRun {
                     await MainActor.run { self.pause() }
                     break
                 }

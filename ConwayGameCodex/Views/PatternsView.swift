@@ -35,6 +35,7 @@ struct PatternsView: View {
                                     Text(pattern.displayName)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
+                                        .accessibilityIdentifier("pattern-\(pattern.rawValue)")
                                 }
                             }
                         }
