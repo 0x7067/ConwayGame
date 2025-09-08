@@ -37,7 +37,7 @@ final class GameViewModel: ObservableObject {
                 self.errorMessage = "Board not found"
                 return
             }
-            let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let population = board.cells.population
             self.state = GameState(boardId: board.id, generation: board.currentGeneration, 
                                   cells: board.cells, isStable: false, populationCount: population)
             self.boardName = board.name
@@ -91,7 +91,7 @@ final class GameViewModel: ObservableObject {
     func reset() async {
         do {
             let board = try await repository.reset(id: boardId)
-            let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let population = board.cells.population
             self.state = GameState(boardId: board.id, generation: 0, 
                                   cells: board.cells, isStable: false, populationCount: population)
             self.pause()

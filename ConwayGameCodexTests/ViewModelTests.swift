@@ -8,16 +8,19 @@ final class GameViewModelTests: XCTestCase {
     private var mockService: MockGameService!
     private var mockRepository: MockBoardRepository!
     private var testBoardId: UUID!
+    private var themeManager: ThemeManager!
     
     override func setUp() async throws {
         try await super.setUp()
         mockService = MockGameService()
         mockRepository = MockBoardRepository()
         testBoardId = UUID()
+        themeManager = ThemeManager()
         viewModel = GameViewModel(
             service: mockService,
             repository: mockRepository,
-            boardId: testBoardId
+            boardId: testBoardId,
+            themeManager: themeManager
         )
     }
     

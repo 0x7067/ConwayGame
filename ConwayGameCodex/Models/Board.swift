@@ -56,6 +56,14 @@ public enum ConvergenceType: Codable, Equatable, Sendable {
     case cyclical(period: Int)
 }
 
+// MARK: - CellsGrid Extensions
+public extension CellsGrid {
+    /// Calculate the total population (number of living cells) in the grid
+    var population: Int {
+        reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+    }
+}
+
 public enum BoardHashing: Sendable {
     // Convert grid to compact string hash (bit-packed then base64)
     public static func hash(for cells: CellsGrid) -> String {

@@ -57,7 +57,7 @@ public final class DefaultGameService: GameService {
             try await repository.save(board)
             
             // Calculate properties
-            let population = next.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let population = next.population
             let isStable = next == gameEngine.computeNextState(next)
             
             let state = GameState(boardId: board.id, generation: board.currentGeneration, cells: next, isStable: isStable, populationCount: population)
@@ -75,7 +75,7 @@ public final class DefaultGameService: GameService {
             
             // Use gameEngine to compute state at generation
             let state = gameEngine.computeStateAtGeneration(board.initialCells, generation: generation)
-            let population = state.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+            let population = state.population
             
             // Check if stable (state unchanged from previous)
             let prevState = generation > 0 ? gameEngine.computeStateAtGeneration(board.initialCells, generation: generation - 1) : board.initialCells
@@ -108,7 +108,7 @@ public final class DefaultGameService: GameService {
                 let convergence = convergenceDetector.checkConvergence(state, history: history)
                 
                 if convergence != .continuing {
-                    let population = state.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
+                    let population = state.population
                     let gs = GameState(boardId: board.id, generation: generation, cells: state, isStable: true, populationCount: population)
                     return .success(gs)
                 }

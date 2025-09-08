@@ -1,11 +1,11 @@
 import SwiftUI
 
-enum ThemePreference: String, CaseIterable {
+public enum ThemePreference: String, CaseIterable {
     case system = "system"
     case light = "light"
     case dark = "dark"
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .system: return "System"
         case .light: return "Light"
@@ -14,13 +14,13 @@ enum ThemePreference: String, CaseIterable {
     }
 }
 
-enum PlaySpeed: CaseIterable {
+public enum PlaySpeed: CaseIterable {
     case normal
     case fast
     case faster
     case turbo
     
-    var displayName: String {
+    public var displayName: String {
         switch self {
         case .normal: return "1x"
         case .fast: return "2x"
@@ -29,7 +29,7 @@ enum PlaySpeed: CaseIterable {
         }
     }
     
-    var interval: UInt64 {
+    public var interval: UInt64 {
         switch self {
         case .normal: return 500_000_000
         case .fast: return 250_000_000
@@ -39,26 +39,26 @@ enum PlaySpeed: CaseIterable {
     }
 }
 
-class ThemeManager: ObservableObject {
-    @Published var themePreference: ThemePreference {
+public class ThemeManager: ObservableObject {
+    @Published public var themePreference: ThemePreference {
         didSet {
             UserDefaults.standard.set(themePreference.rawValue, forKey: "themePreference")
         }
     }
     
-    @Published var defaultBoardSize: Int {
+    @Published public var defaultBoardSize: Int {
         didSet {
             UserDefaults.standard.set(defaultBoardSize, forKey: "defaultBoardSize")
         }
     }
     
-    @Published var defaultPlaySpeed: PlaySpeed {
+    @Published public var defaultPlaySpeed: PlaySpeed {
         didSet {
             UserDefaults.standard.set(defaultPlaySpeed.displayName, forKey: "defaultPlaySpeed")
         }
     }
     
-    init() {
+    public init() {
         let savedPreference = UserDefaults.standard.string(forKey: "themePreference") ?? ThemePreference.system.rawValue
         self.themePreference = ThemePreference(rawValue: savedPreference) ?? .system
         
@@ -69,7 +69,7 @@ class ThemeManager: ObservableObject {
         self.defaultPlaySpeed = PlaySpeed.allCases.first { $0.displayName == savedSpeedName } ?? .normal
     }
     
-    var colorScheme: ColorScheme? {
+    public var colorScheme: ColorScheme? {
         switch themePreference {
         case .system: return nil // Let system decide
         case .light: return .light

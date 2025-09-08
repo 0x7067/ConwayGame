@@ -130,7 +130,7 @@ private struct BoardGrid: View {
                         path.move(to: CGPoint(x: 0, y: py))
                         path.addLine(to: CGPoint(x: CGFloat(w) * cellW, y: py))
                     }
-                    ctx.stroke(path, with: .color(.secondary.opacity(0.25)), lineWidth: 0.5)
+                    ctx.stroke(path, with: .color(.secondary.opacity(DesignTokens.Opacity.light)), lineWidth: 0.5)
                 }
             }
             .frame(height: CGFloat(h) * cellH)

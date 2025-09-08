@@ -20,18 +20,18 @@ struct PatternsView: View {
             Text("Common Patterns").font(.headline)
             
             ForEach(patternGroups) { group in
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.md) {
                     Text(group.title).font(.headline)
                     Text(group.description).font(.subheadline).foregroundColor(.secondary)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
+                        HStack(spacing: DesignTokens.Spacing.lg) {
                             ForEach(group.patterns, id: \.id) { pattern in
-                                VStack(spacing: 8) {
+                                VStack(spacing: DesignTokens.Spacing.sm) {
                                     AnimatedPatternView(pattern: pattern, boardSize: group.boardSize)
                                         .frame(width: 80, height: 80)
                                         .background(Color(.systemGray6))
-                                        .cornerRadius(8)
+                                        .cornerRadius(DesignTokens.CornerRadius.sm)
                                     Text(pattern.displayName)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
@@ -39,10 +39,10 @@ struct PatternsView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, DesignTokens.Spacing.xs)
                     }
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, DesignTokens.Spacing.sm)
             }
             
             Section(header: Text("Try Them")) {
@@ -174,7 +174,7 @@ private struct PatternBoardGrid: View {
                         path.move(to: CGPoint(x: 0, y: py))
                         path.addLine(to: CGPoint(x: CGFloat(w) * cellW, y: py))
                     }
-                    ctx.stroke(path, with: .color(.secondary.opacity(0.25)), lineWidth: 0.5)
+                    ctx.stroke(path, with: .color(.secondary.opacity(DesignTokens.Opacity.light)), lineWidth: 0.5)
                 }
             }
             .frame(height: CGFloat(h) * cellH)

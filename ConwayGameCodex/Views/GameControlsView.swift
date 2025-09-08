@@ -13,16 +13,16 @@ struct GameControlsView: View {
     @State private var maxIterInput: String = "500"
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: DesignTokens.Spacing.xl) {
             // Primary Controls - Prominent and centered
-            VStack(spacing: 16) {
+            VStack(spacing: DesignTokens.Spacing.lg) {
                 // Play controls with better visual hierarchy
-                HStack(spacing: 24) {
+                HStack(spacing: DesignTokens.Spacing.xxl) {
                     // Step button
                     Button(action: onStep) {
                         VStack(spacing: 4) {
                             Image(systemName: "forward.frame")
-                                .font(.system(size: 24))
+                                .font(.system(size: DesignTokens.FontSize.h2))
                                 .foregroundColor(isLocked ? .gray : .accentColor)
                             Text("Step")
                                 .font(.caption2)
@@ -38,10 +38,10 @@ struct GameControlsView: View {
                     Button(action: onTogglePlay) {
                         ZStack {
                             Circle()
-                                .fill(isLocked ? Color.gray.opacity(0.3) : Color.accentColor)
-                                .frame(width: 64, height: 64)
+                                .fill(isLocked ? Color.gray.opacity(DesignTokens.Opacity.disabled) : Color.accentColor)
+                                .frame(width: DesignTokens.IconSize.hero, height: DesignTokens.IconSize.hero)
                             Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                                .font(.system(size: 24))
+                                .font(.system(size: DesignTokens.FontSize.h2))
                                 .foregroundColor(.white)
                                 .offset(x: isPlaying ? 0 : 2)
                         }
@@ -56,7 +56,7 @@ struct GameControlsView: View {
                         Button(action: onReset) {
                             VStack(spacing: 4) {
                                 Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 24))
+                                    .font(.system(size: DesignTokens.FontSize.h2))
                                     .foregroundColor(.accentColor)
                                 Text("Reset")
                                     .font(.caption2)
@@ -70,7 +70,7 @@ struct GameControlsView: View {
                 }
                 
                 // Speed control - Elegant capsule style
-                VStack(spacing: 8) {
+                VStack(spacing: DesignTokens.Spacing.sm) {
                     Text("Speed")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -86,17 +86,17 @@ struct GameControlsView: View {
                     .disabled(isLocked)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, DesignTokens.Padding.md)
             .padding(.horizontal, 20)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: DesignTokens.CornerRadius.lg)
                     .fill(Color(.systemGray6))
             )
             
             // Secondary Controls - Smaller and subdued
             HStack(spacing: 20) {
                 // Jump to generation
-                HStack(spacing: 8) {
+                HStack(spacing: DesignTokens.Spacing.sm) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("JUMP TO")
                             .font(.caption2)
@@ -111,7 +111,7 @@ struct GameControlsView: View {
                                     .font(.caption)
                                     .fontWeight(.medium)
                                     .foregroundColor(.white)
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, DesignTokens.Padding.md)
                                     .padding(.vertical, 6)
                                     .background(isLocked ? Color.gray : Color.accentColor)
                                     .cornerRadius(6)
@@ -124,7 +124,7 @@ struct GameControlsView: View {
                 Spacer()
                 
                 // Find final state
-                HStack(spacing: 8) {
+                HStack(spacing: DesignTokens.Spacing.sm) {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text("FIND FINAL")
                             .font(.caption2)
@@ -140,7 +140,7 @@ struct GameControlsView: View {
                                     .font(.caption)
                                     .fontWeight(.medium)
                                     .foregroundColor(.white)
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, DesignTokens.Padding.md)
                                     .padding(.vertical, 6)
                                     .background(isLocked ? Color.gray : Color.accentColor)
                                     .cornerRadius(6)
@@ -161,11 +161,11 @@ struct GameControlsView: View {
                         .font(.caption)
                 }
                 .foregroundColor(.orange)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, DesignTokens.Padding.lg)
+                .padding(.vertical, DesignTokens.Padding.sm)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.orange.opacity(0.1))
+                    RoundedRectangle(cornerRadius: DesignTokens.CornerRadius.sm)
+                        .fill(Color.orange.opacity(DesignTokens.Opacity.light))
                 )
             }
         }
