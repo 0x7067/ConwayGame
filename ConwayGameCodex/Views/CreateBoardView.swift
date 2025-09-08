@@ -8,9 +8,9 @@ struct CopyBoardData {
 struct CreateBoardView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name: String = "New Board"
-    @State private var width: Int = 20
-    @State private var height: Int = 20
-    @State private var cells: CellsGrid = Array(repeating: Array(repeating: false, count: 20), count: 20)
+    @State private var width: Int = 15
+    @State private var height: Int = 15
+    @State private var cells: CellsGrid = Array(repeating: Array(repeating: false, count: 15), count: 15)
     @State private var errorMessage: String?
     // Navigation to PatternPicker is handled by NavigationLink (no sheet)
 
@@ -20,7 +20,21 @@ struct CreateBoardView: View {
     var onCreated: ((UUID) -> Void)? = nil
 
     private func resizeGrid() {
-        cells = Array(repeating: Array(repeating: false, count: width), count: height)
+        let oldCells = cells
+        let oldHeight = oldCells.count
+        let oldWidth = oldHeight > 0 ? oldCells[0].count : 0
+        
+        // Create new grid with desired dimensions
+        var newCells = Array(repeating: Array(repeating: false, count: width), count: height)
+        
+        // Copy existing cells to the new grid, preserving their positions
+        for y in 0..<min(height, oldHeight) {
+            for x in 0..<min(width, oldWidth) {
+                newCells[y][x] = oldCells[y][x]
+            }
+        }
+        
+        cells = newCells
     }
     
     private func setupCopyData() {
@@ -76,7 +90,6 @@ struct CreateBoardView: View {
             }
             Section(header: Text("Pattern")) {
                 EditableGrid(cells: $cells)
-                    .frame(minHeight: 200)
             }
             Section {
                 Button("Create") {
@@ -104,27 +117,24 @@ struct CreateBoardView: View {
 
 private struct EditableGrid: View {
     @Binding var cells: CellsGrid
+    
     var body: some View {
-        GeometryReader { geo in
-            let h = cells.count
-            let w = h > 0 ? cells[0].count : 0
-            let cellW = geo.size.width / CGFloat(max(1, w))
-            let cellH = cellW
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: w), spacing: 1) {
-                ForEach(0..<(h * w), id: \.self) { index in
-                    let x = index % w
-                    let y = index / w
-                    Rectangle()
-                        .fill(cells[y][x] ? Color.accentColor : Color(.systemGray6))
-                        .border(Color.secondary.opacity(0.4), width: 0.5)
-                        .aspectRatio(1, contentMode: .fit)
-                        .onTapGesture {
-                            cells[y][x].toggle()
-                            print("Toggled cell (\(x), \(y)) to \(cells[y][x])") // Debug print
-                        }
-                }
+        let h = cells.count
+        let w = h > 0 ? cells[0].count : 0
+        
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: w), spacing: 1) {
+            ForEach(0..<(h * w), id: \.self) { index in
+                let x = index % w
+                let y = index / w
+                Rectangle()
+                    .fill(cells[y][x] ? Color.accentColor : Color(.systemGray6))
+                    .border(Color.secondary.opacity(0.4), width: 0.5)
+                    .aspectRatio(1, contentMode: .fit)
+                    .onTapGesture {
+                        cells[y][x].toggle()
+                        print("Toggled cell (\(x), \(y)) to \(cells[y][x])") // Debug print
+                    }
             }
-            .frame(height: CGFloat(h) * cellH)
         }
     }
 }
