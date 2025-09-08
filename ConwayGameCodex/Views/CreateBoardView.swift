@@ -133,9 +133,7 @@ struct CreateBoardView: View {
             }
         }
         .navigationTitle("Create Board")
-        .alert("Error", isPresented: .constant(errorMessage != nil), presenting: errorMessage) { _ in
-            Button("OK") { errorMessage = nil }
-        } message: { msg in Text(msg) }
+        .errorAlert(errorMessage: $errorMessage)
         .onChange(of: width) { resizeGrid() }
         .onChange(of: height) { resizeGrid() }
         .onAppear { 

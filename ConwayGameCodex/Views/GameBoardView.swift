@@ -75,9 +75,7 @@ struct GameBoardView: View {
         }
         .onDisappear { vm.pause() }
         .task { await vm.loadCurrent() }
-        .alert("Error", isPresented: .constant(vm.errorMessage != nil), presenting: vm.errorMessage) { _ in
-            Button("OK") { vm.errorMessage = nil }
-        } message: { msg in Text(msg) }
+        .errorAlert(errorMessage: $vm.errorMessage)
         .sheet(isPresented: $showingCopySheet) {
             if let state = vm.state {
                 NavigationView {
