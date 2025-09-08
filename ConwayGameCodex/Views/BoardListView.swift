@@ -7,23 +7,31 @@ struct BoardListView: View {
     @State private var renamingBoard: Board?
     @State private var newName: String = ""
     @State private var showingCreate: Bool = false
+    @Binding var navigationPath: NavigationPath
 
-    init(gameService: GameService, repository: BoardRepository) {
+    init(gameService: GameService, repository: BoardRepository, navigationPath: Binding<NavigationPath>) {
         _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService, repository: repository))
+        _navigationPath = navigationPath
     }
 
     var body: some View {
         ZStack {
-            // Hidden link for programmatic navigation to newly created board
-            NavigationLink(isActive: $navigateToCreated) {
-                if let id = createdId {
-                    GameBoardView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, boardId: id)
+            // Handle programmatic navigation to newly created board
+            if navigateToCreated, let id = createdId {
+                Button("") {
+                    navigationPath.append(id)
+                    navigateToCreated = false
                 }
-            } label: { EmptyView() }
+                .hidden()
+                .onAppear {
+                    navigationPath.append(id)
+                    navigateToCreated = false
+                }
+            }
 
             List {
                 ForEach(vm.boards, id: \.id) { board in
-                    NavigationLink(destination: GameBoardView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, boardId: board.id)) {
+                    NavigationLink(value: board.id) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(board.name)
@@ -46,6 +54,14 @@ struct BoardListView: View {
             }
         }
         .navigationTitle("Boards")
+        .navigationDestination(for: UUID.self) { boardId in
+            GameBoardView(
+                gameService: ServiceContainer.shared.gameService,
+                repository: ServiceContainer.shared.boardRepository,
+                boardId: boardId,
+                navigationPath: $navigationPath
+            )
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -89,5 +105,12 @@ struct BoardListView: View {
 }
 
 #Preview {
-    BoardListView(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository)
+    @Previewable @State var path = NavigationPath()
+    return NavigationStack(path: $path) {
+        BoardListView(
+            gameService: ServiceContainer.shared.gameService, 
+            repository: ServiceContainer.shared.boardRepository,
+            navigationPath: $path
+        )
+    }
 }

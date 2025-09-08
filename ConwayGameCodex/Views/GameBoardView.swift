@@ -3,9 +3,23 @@ import SwiftUI
 struct GameBoardView: View {
     @StateObject private var vm: GameViewModel
     @State private var showGrid: Bool = true
+    @State private var showingCopySheet = false
+    @Environment(\.dismiss) private var dismiss
+    @Binding var navigationPath: NavigationPath
 
-    init(gameService: GameService, repository: BoardRepository, boardId: UUID) {
+    let gameService: GameService
+    let repository: BoardRepository
+
+    init(gameService: GameService, repository: BoardRepository, boardId: UUID, navigationPath: Binding<NavigationPath>) {
+        self.gameService = gameService
+        self.repository = repository
         _vm = StateObject(wrappedValue: GameViewModel(service: gameService, repository: repository, boardId: boardId))
+        _navigationPath = navigationPath
+    }
+    
+    private func dismissToRoot() {
+        // Clear the navigation path to go back to root (BoardListView)
+        navigationPath.removeLast(navigationPath.count)
     }
 
     var body: some View {
@@ -35,12 +49,51 @@ struct GameBoardView: View {
             .padding(.bottom)
         }
         .navigationTitle("Game")
-        .toolbar { Toggle(isOn: $showGrid) { Image(systemName: showGrid ? "square.grid.3x3" : "square") } }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismissToRoot()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Boards")
+                    }
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack {
+                    Button(action: { showingCopySheet = true }) {
+                        Image(systemName: "doc.on.doc")
+                    }
+                    Toggle(isOn: $showGrid) { 
+                        Image(systemName: showGrid ? "square.grid.3x3" : "square") 
+                    }
+                }
+            }
+        }
         .onDisappear { vm.pause() }
         .task { await vm.loadCurrent() }
         .alert("Error", isPresented: .constant(vm.errorMessage != nil), presenting: vm.errorMessage) { _ in
             Button("OK") { vm.errorMessage = nil }
         } message: { msg in Text(msg) }
+        .sheet(isPresented: $showingCopySheet) {
+            if let state = vm.state {
+                NavigationView {
+                    CreateBoardView(
+                        gameService: gameService,
+                        repository: repository,
+                        copyFromBoard: CopyBoardData(
+                            name: vm.boardName,
+                            cells: state.cells
+                        )
+                    ) { newBoardIdFromCreation in
+                        showingCopySheet = false
+                        navigationPath.append(newBoardIdFromCreation)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -85,9 +138,13 @@ private struct BoardGrid: View {
 }
 
 #Preview {
-    GameBoardView(
-        gameService: ServiceContainer.shared.gameService, 
-        repository: ServiceContainer.shared.boardRepository, 
-        boardId: UUID()
-    )
+    @Previewable @State var path = NavigationPath()
+    return NavigationStack(path: $path) {
+        GameBoardView(
+            gameService: ServiceContainer.shared.gameService, 
+            repository: ServiceContainer.shared.boardRepository, 
+            boardId: UUID(),
+            navigationPath: $path
+        )
+    }
 }

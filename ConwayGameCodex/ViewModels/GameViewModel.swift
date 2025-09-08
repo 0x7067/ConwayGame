@@ -32,6 +32,7 @@ final class GameViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isFinalLocked: Bool = false
     @Published var playSpeed: PlaySpeed = .normal
+    @Published var boardName: String = ""
 
     private let service: GameService
     private let repository: BoardRepository
@@ -48,6 +49,10 @@ final class GameViewModel: ObservableObject {
         self.boardId = boardId
     }
 
+    var currentBoardId: UUID {
+        boardId
+    }
+
     func loadCurrent() async {
         do {
             guard let board = try await repository.load(id: boardId) else {
@@ -57,6 +62,7 @@ final class GameViewModel: ObservableObject {
             let population = board.cells.reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
             self.state = GameState(boardId: board.id, generation: board.currentGeneration, 
                                   cells: board.cells, isStable: false, populationCount: population)
+            self.boardName = board.name
             self.isFinalLocked = false
         } catch {
             self.errorMessage = error.localizedDescription

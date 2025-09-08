@@ -1,5 +1,10 @@
 import SwiftUI
 
+struct CopyBoardData {
+    let name: String
+    let cells: CellsGrid
+}
+
 struct CreateBoardView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name: String = "New Board"
@@ -11,10 +16,20 @@ struct CreateBoardView: View {
 
     let gameService: GameService
     let repository: BoardRepository
+    var copyFromBoard: CopyBoardData? = nil
     var onCreated: ((UUID) -> Void)? = nil
 
     private func resizeGrid() {
         cells = Array(repeating: Array(repeating: false, count: width), count: height)
+    }
+    
+    private func setupCopyData() {
+        if let copyData = copyFromBoard {
+            name = copyData.name + " COPY"
+            height = copyData.cells.count
+            width = copyData.cells.first?.count ?? 20
+            cells = copyData.cells
+        }
     }
 
     private func applyPattern(_ pattern: PredefinedPattern) {
@@ -83,6 +98,7 @@ struct CreateBoardView: View {
         } message: { msg in Text(msg) }
         .onChange(of: width) { resizeGrid() }
         .onChange(of: height) { resizeGrid() }
+        .onAppear { setupCopyData() }
     }
 }
 
@@ -94,27 +110,18 @@ private struct EditableGrid: View {
             let w = h > 0 ? cells[0].count : 0
             let cellW = geo.size.width / CGFloat(max(1, w))
             let cellH = cellW
-            ZStack(alignment: .topLeading) {
-                // Live cells
-                Canvas { ctx, _ in
-                    for y in 0..<h {
-                        for x in 0..<w where cells[y][x] {
-                            let rect = CGRect(x: CGFloat(x) * cellW, y: CGFloat(y) * cellH, width: cellW, height: cellH)
-                            ctx.fill(Path(rect), with: .color(.accentColor))
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: w), spacing: 1) {
+                ForEach(0..<(h * w), id: \.self) { index in
+                    let x = index % w
+                    let y = index / w
+                    Rectangle()
+                        .fill(cells[y][x] ? Color.accentColor : Color(.systemGray6))
+                        .border(Color.secondary.opacity(0.4), width: 0.5)
+                        .aspectRatio(1, contentMode: .fit)
+                        .onTapGesture {
+                            cells[y][x].toggle()
+                            print("Toggled cell (\(x), \(y)) to \(cells[y][x])") // Debug print
                         }
-                    }
-                }
-                // Tap overlay grid
-                ForEach(0..<h, id: \.self) { y in
-                    ForEach(0..<w, id: \.self) { x in
-                        Rectangle()
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
-                            .background((cells[y][x] ? Color.accentColor : Color.clear).opacity(0.001))
-                            .frame(width: cellW, height: cellH)
-                            .position(x: CGFloat(x) * cellW + cellW/2, y: CGFloat(y) * cellH + cellH/2)
-                            .contentShape(Rectangle())
-                            .onTapGesture { cells[y][x].toggle() }
-                    }
                 }
             }
             .frame(height: CGFloat(h) * cellH)
