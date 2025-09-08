@@ -12,14 +12,23 @@ ConwayGame is a production-ready iOS implementation of Conway's Game of Life bui
 # Build the project
 xcodebuild -scheme ConwayGame -configuration Debug build
 
-# Run tests
-xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
+# Run all tests
+xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test
 
 # Run specific test target
-xcodebuild -scheme ConwayGameTests -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
+xcodebuild -scheme ConwayGameTests -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test
+
+# Run specific test file (example)
+xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test -only-testing:ConwayGameTests/GameEngineTests
+
+# Run specific test method (example)
+xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test -only-testing:ConwayGameTests/GameEngineTests/testBasicPatterns
 
 # Build for release
 xcodebuild -scheme ConwayGame -configuration Release build
+
+# Clean build folder
+xcodebuild -scheme ConwayGame clean
 ```
 
 ## Architecture Overview
