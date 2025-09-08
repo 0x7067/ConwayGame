@@ -1,6 +1,6 @@
 import XCTest
 
-final class ConwayGameCodexUITests: XCTestCase {
+final class ConwayGameUITests: XCTestCase {
     private var app: XCUIApplication!
     
     override func setUpWithError() throws {

@@ -4,22 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ConwayGameCodex is a production-ready iOS implementation of Conway's Game of Life built with SwiftUI and Core Data. The architecture follows clean separation of concerns with distinct layers for game logic, persistence, and UI.
+ConwayGame is a production-ready iOS implementation of Conway's Game of Life built with SwiftUI and Core Data. The architecture follows clean separation of concerns with distinct layers for game logic, persistence, and UI.
 
 ## Build and Test Commands
 
 ```bash
 # Build the project
-xcodebuild -scheme ConwayGameCodex -configuration Debug build
+xcodebuild -scheme ConwayGame -configuration Debug build
 
 # Run tests
-xcodebuild -scheme ConwayGameCodex -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
+xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
 
 # Run specific test target
-xcodebuild -scheme ConwayGameCodexTests -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
+xcodebuild -scheme ConwayGameTests -destination 'platform=iOS Simulator,name=iPhone 15 Pro' test
 
 # Build for release
-xcodebuild -scheme ConwayGameCodex -configuration Release build
+xcodebuild -scheme ConwayGame -configuration Release build
 ```
 
 ## Architecture Overview

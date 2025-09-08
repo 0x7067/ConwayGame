@@ -1,14 +1,14 @@
 //
-//  ConwayGameCodexTests.swift
-//  ConwayGameCodexTests
+//  ConwayGameTests.swift
+//  ConwayGameTests
 //
 //  Created by Pedro Guimarães on 9/7/25.
 //
 
 import XCTest
-@testable import ConwayGameCodex
+@testable import ConwayGame
 
-final class ConwayGameCodexTests: XCTestCase {
+final class ConwayGameTests: XCTestCase {
 
     func test_blockStillLifeRemainsStable() throws {
         let engine = ConwayGameEngine()

@@ -1,13 +1,13 @@
 //
-//  ConwayGameCodexUITestsLaunchTests.swift
-//  ConwayGameCodexUITests
+//  ConwayGameUITestsLaunchTests.swift
+//  ConwayGameUITests
 //
 //  Created by Pedro Guimarães on 9/7/25.
 //
 
 import XCTest
 
-final class ConwayGameCodexUITestsLaunchTests: XCTestCase {
+final class ConwayGameUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

@@ -1,6 +1,6 @@
 //
-//  ConwayGameCodexApp.swift
-//  ConwayGameCodex
+//  ConwayGameApp.swift
+//  ConwayGame
 //
 //  Created by Pedro Guimarães on 9/7/25.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct ConwayGameCodexApp: App {
+struct ConwayGameApp: App {
     let persistenceController = PersistenceController.shared
 
     var body: some Scene {

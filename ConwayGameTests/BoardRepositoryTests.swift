@@ -1,5 +1,5 @@
 import XCTest
-@testable import ConwayGameCodex
+@testable import ConwayGame
 
 // MARK: - Mock Repository for Testing
 

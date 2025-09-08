@@ -1,5 +1,5 @@
 import XCTest
-@testable import ConwayGameCodex
+@testable import ConwayGame
 
 final class GameServiceTests: XCTestCase {
     private var gameService: DefaultGameService!

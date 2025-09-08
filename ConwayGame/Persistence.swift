@@ -1,6 +1,6 @@
 //
 //  Persistence.swift
-//  ConwayGameCodex
+//  ConwayGame
 //
 //  Created by Pedro Guimarães on 9/7/25.
 //
@@ -20,7 +20,7 @@ struct PersistenceController {
     let container: NSPersistentContainer
 
     init(inMemory: Bool = false) {
-        container = NSPersistentContainer(name: "ConwayGameCodex")
+        container = NSPersistentContainer(name: "ConwayGame")
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
