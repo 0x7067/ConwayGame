@@ -31,7 +31,20 @@ struct GameBoardView: View {
                     .aspectRatio(contentMode: .fit)
                     .padding(.horizontal)
                 HStack {
-                    Text("Gen: \(state.generation)")
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let convergenceType = state.convergenceType {
+                            Text("Gen: \(state.generation) (\(convergenceType.displayName))")
+                                .foregroundColor(.accentColor)
+                        } else {
+                            Text("Gen: \(state.generation)")
+                        }
+                        
+                        if let convergedAt = state.convergedAt, convergedAt != state.generation {
+                            Text("Final state found at gen \(convergedAt)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                     Spacer()
                     Text("Pop: \(state.populationCount)")
                 }.padding(.horizontal)
@@ -41,6 +54,7 @@ struct GameBoardView: View {
             GameControlsView(
                 isPlaying: vm.isPlaying,
                 isLocked: vm.isFinalLocked,
+                gameState: vm.state,
                 playSpeed: $vm.playSpeed,
                 onStep: { Task { await vm.step() } },
                 onTogglePlay: { vm.isPlaying ? vm.pause() : vm.play() },
@@ -78,6 +92,11 @@ struct GameBoardView: View {
         .onDisappear { vm.pause() }
         .task { await vm.loadCurrent() }
         .errorAlert(errorMessage: $vm.errorMessage)
+        .alert("Generation Limit Reached", isPresented: $vm.showGenerationLimitAlert) {
+            Button("OK") { vm.showGenerationLimitAlert = false }
+        } message: {
+            Text("Game didn't reach a final state after 500 generations. There are still living cells.")
+        }
         .sheet(isPresented: $showingCopySheet) {
             if let state = vm.state {
                 NavigationView {

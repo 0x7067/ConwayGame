@@ -158,6 +158,52 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isFinalLocked)
     }
     
+    func test_finalState_generationLimitExceeded_showsGenerationLimitAlert() async {
+        mockService.finalStateResult = .failure(.generationLimitExceeded(500))
+        
+        await viewModel.finalState(maxIterations: 500)
+        
+        XCTAssertNil(viewModel.state)
+        XCTAssertTrue(viewModel.showGenerationLimitAlert)
+        XCTAssertNil(viewModel.errorMessage) // Should not set error message
+        XCTAssertFalse(viewModel.isFinalLocked)
+    }
+    
+    func test_finalState_generationLimitExceeded_doesNotSetErrorMessage() async {
+        mockService.finalStateResult = .failure(.generationLimitExceeded(500))
+        
+        await viewModel.finalState(maxIterations: 500)
+        
+        XCTAssertTrue(viewModel.showGenerationLimitAlert)
+        XCTAssertNil(viewModel.errorMessage) // Should be nil, not the generic error message
+    }
+    
+    func test_showGenerationLimitAlert_initiallyFalse() {
+        XCTAssertFalse(viewModel.showGenerationLimitAlert)
+    }
+    
+    func test_finalState_convergenceInfo_isPreserved() async {
+        // Test that convergence info is preserved when final state succeeds
+        let convergentState = GameState(
+            boardId: testBoardId,
+            generation: 5,
+            cells: [[false, false], [false, false]],
+            isStable: true,
+            populationCount: 0,
+            convergedAt: 5,
+            convergenceType: .extinct
+        )
+        mockService.finalStateResult = .success(convergentState)
+        
+        await viewModel.finalState(maxIterations: 100)
+        
+        XCTAssertEqual(viewModel.state, convergentState)
+        XCTAssertEqual(viewModel.state?.convergedAt, 5)
+        XCTAssertEqual(viewModel.state?.convergenceType, .extinct)
+        XCTAssertTrue(viewModel.isFinalLocked)
+        XCTAssertFalse(viewModel.isPlaying)
+    }
+    
     // MARK: - Reset Tests
     
     func test_reset_success_resetsToInitialState() async {

@@ -61,7 +61,13 @@ public final class DefaultGameService: GameService {
             let population = next.population
             let isStable = next == gameEngine.computeNextState(next)
             
-            let state = GameState(boardId: board.id, generation: board.currentGeneration, cells: next, isStable: isStable, populationCount: population)
+            let state = GameState(
+                boardId: board.id, 
+                generation: board.currentGeneration, 
+                cells: next, 
+                isStable: isStable, 
+                populationCount: population
+            )
             return .success(state)
         } catch {
             return .failure(.computationError(String(describing: error)))
@@ -82,7 +88,13 @@ public final class DefaultGameService: GameService {
             let prevState = generation > 0 ? gameEngine.computeStateAtGeneration(board.initialCells, generation: generation - 1) : board.initialCells
             let isStable = state == prevState
             
-            let gs = GameState(boardId: board.id, generation: generation, cells: state, isStable: isStable, populationCount: population)
+            let gs = GameState(
+                boardId: board.id, 
+                generation: generation, 
+                cells: state, 
+                isStable: isStable, 
+                populationCount: population
+            )
             return .success(gs)
         } catch let e as GameError {
             return .failure(e)
@@ -110,12 +122,25 @@ public final class DefaultGameService: GameService {
                 
                 if convergence != .continuing {
                     let population = state.population
-                    let gs = GameState(boardId: board.id, generation: generation, cells: state, isStable: true, populationCount: population)
+                    let gs = GameState(
+                        boardId: board.id,
+                        generation: generation + 1,
+                        cells: state,
+                        isStable: true,
+                        populationCount: population,
+                        convergedAt: generation + 1,
+                        convergenceType: convergence
+                    )
                     return .success(gs)
                 }
                 
                 history.insert(hash)
                 state = gameEngine.computeNextState(state)
+            }
+            
+            // Check if we reached the generation limit with living cells
+            if maxIterations >= UIConstants.maxGenerationLimit && state.population > 0 {
+                return .failure(.generationLimitExceeded(maxIterations))
             }
             
             return .failure(.convergenceTimeout(maxIterations: maxIterations))

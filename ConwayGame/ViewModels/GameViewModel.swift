@@ -9,6 +9,7 @@ final class GameViewModel: ObservableObject {
     @Published var isFinalLocked: Bool = false
     @Published var playSpeed: PlaySpeed = .normal
     @Published var boardName: String = ""
+    @Published var showGenerationLimitAlert: Bool = false
 
     private let service: GameService
     private let repository: BoardRepository
@@ -39,8 +40,13 @@ final class GameViewModel: ObservableObject {
                 return
             }
             let population = board.cells.population
-            self.state = GameState(boardId: board.id, generation: board.currentGeneration, 
-                                  cells: board.cells, isStable: false, populationCount: population)
+            self.state = GameState(
+                boardId: board.id, 
+                generation: board.currentGeneration, 
+                cells: board.cells, 
+                isStable: false, 
+                populationCount: population
+            )
             self.boardName = board.name
             self.isFinalLocked = false
         } catch {
@@ -85,7 +91,11 @@ final class GameViewModel: ObservableObject {
             self.pause()
             self.isFinalLocked = true
         case .failure(let e):
-            self.errorMessage = e.localizedDescription
+            if case .generationLimitExceeded = e {
+                self.showGenerationLimitAlert = true
+            } else {
+                self.errorMessage = e.localizedDescription
+            }
         }
     }
 
@@ -93,8 +103,13 @@ final class GameViewModel: ObservableObject {
         do {
             let board = try await repository.reset(id: boardId)
             let population = board.cells.population
-            self.state = GameState(boardId: board.id, generation: 0, 
-                                  cells: board.cells, isStable: false, populationCount: population)
+            self.state = GameState(
+                boardId: board.id, 
+                generation: 0, 
+                cells: board.cells, 
+                isStable: false, 
+                populationCount: population
+            )
             self.pause()
             self.isFinalLocked = false
         } catch {

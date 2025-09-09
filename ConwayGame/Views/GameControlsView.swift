@@ -3,6 +3,7 @@ import SwiftUI
 struct GameControlsView: View {
     let isPlaying: Bool
     var isLocked: Bool = false
+    var gameState: GameState? = nil
     @Binding var playSpeed: PlaySpeed
     let onStep: () -> Void
     let onTogglePlay: () -> Void
@@ -130,12 +131,12 @@ struct GameControlsView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                         HStack(spacing: 4) {
-                            TextField("500", text: $maxIterInput)
+                            TextField("\(UIConstants.maxGenerationLimit)", text: $maxIterInput)
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .frame(width: 70)
                                 .multilineTextAlignment(.trailing)
-                            Button(action: { if let m = Int(maxIterInput) { onFinal(min(m, UIConstants.maxFinalIterations)) } }) {
+                            Button(action: { if let m = Int(maxIterInput) { onFinal(min(m, UIConstants.maxGenerationLimit)) } }) {
                                 Text("Find")
                                     .font(.caption)
                                     .fontWeight(.medium)
@@ -157,8 +158,18 @@ struct GameControlsView: View {
                 HStack {
                     Image(systemName: "lock.fill")
                         .font(.caption)
-                    Text("Final state reached. Reset to continue.")
-                        .font(.caption)
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let state = gameState, let convergenceType = state.convergenceType {
+                            Text("Pattern \(convergenceType.displayName.lowercased()) at generation \(state.generation).")
+                                .font(.caption)
+                        } else {
+                            Text("Final state reached.")
+                                .font(.caption)
+                        }
+                        Text("Reset to continue.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .foregroundColor(.orange)
                 .padding(.horizontal, DesignTokens.Padding.lg)

@@ -5,6 +5,8 @@ public enum UIConstants {
     public static let maxBoardDimension: Int = 50
     // Max auto steps when playing continuously
     public static let maxAutoStepsPerRun: Int = 500
+    // Generation limit for finding final state
+    public static let maxGenerationLimit: Int = 500
     // Safety caps for expensive computations
     public static let maxFinalIterations: Int = 10_000
     public static let maxJumpGeneration: Int = 100_000
