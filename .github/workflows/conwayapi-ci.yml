@@ -49,6 +49,7 @@ jobs:
         uses: Cyberbeni/install-swift-tool@v3
         with:
           url: https://github.com/nicklockwood/SwiftFormat
+          version: '0.57.2'
 
       - name: Check Code Formatting (ConwayAPI)
         working-directory: ConwayAPI
@@ -105,6 +106,7 @@ jobs:
         uses: Cyberbeni/install-swift-tool@v3
         with:
           url: https://github.com/nicklockwood/SwiftFormat
+          version: '0.57.2'
 
       - name: Check Code Formatting (ConwayAPI)
         working-directory: ConwayAPI
