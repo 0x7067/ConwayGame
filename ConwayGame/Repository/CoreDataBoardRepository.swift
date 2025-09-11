@@ -119,6 +119,76 @@ final class CoreDataBoardRepository: BoardRepository, @unchecked Sendable {
             }
         }
     }
+    
+    func loadBoardsPaginated(offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
+        let context = container.viewContext
+        return try await context.perform {
+            // Get total count
+            let countRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+            let totalCount = try context.count(for: countRequest)
+            
+            // Get paginated results
+            let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+            fetch.fetchLimit = limit
+            fetch.fetchOffset = offset
+            fetch.sortDescriptors = sortBy.sortDescriptors
+            
+            let list = try context.fetch(fetch)
+            let boards = try list.map(self.map)
+            
+            let hasMorePages = (offset + limit) < totalCount
+            let currentPage = offset / limit
+            
+            return BoardListPage(
+                boards: boards,
+                totalCount: totalCount,
+                hasMorePages: hasMorePages,
+                currentPage: currentPage,
+                pageSize: limit
+            )
+        }
+    }
+    
+    func searchBoards(query: String, offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
+        let context = container.viewContext
+        return try await context.perform {
+            let predicate = query.isEmpty ? nil : NSPredicate(format: "name CONTAINS[cd] %@", query)
+            
+            // Get total count for search
+            let countRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+            countRequest.predicate = predicate
+            let totalCount = try context.count(for: countRequest)
+            
+            // Get paginated search results
+            let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+            fetch.predicate = predicate
+            fetch.fetchLimit = limit
+            fetch.fetchOffset = offset
+            fetch.sortDescriptors = sortBy.sortDescriptors
+            
+            let list = try context.fetch(fetch)
+            let boards = try list.map(self.map)
+            
+            let hasMorePages = (offset + limit) < totalCount
+            let currentPage = offset / limit
+            
+            return BoardListPage(
+                boards: boards,
+                totalCount: totalCount,
+                hasMorePages: hasMorePages,
+                currentPage: currentPage,
+                pageSize: limit
+            )
+        }
+    }
+    
+    func getTotalBoardCount() async throws -> Int {
+        let context = container.viewContext
+        return try await context.perform {
+            let countRequest: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+            return try context.count(for: countRequest)
+        }
+    }
 
     func delete(id: UUID) async throws {
         let context = container.newBackgroundContext()

@@ -27,6 +27,7 @@ public struct GameEngineConfiguration: Equatable, Codable {
     public let defaultRandomDensity: Double
     public let maxPatternGenerations: Int
     public let displayFrequency: DisplayFrequency
+    public let paginationPageSize: Int
     
     public init(
         survivalNeighborCounts: Set<Int> = [2, 3],
@@ -35,7 +36,8 @@ public struct GameEngineConfiguration: Equatable, Codable {
         defaultBoardHeight: Int = 15,
         defaultRandomDensity: Double = 0.25,
         maxPatternGenerations: Int = 50,
-        displayFrequency: DisplayFrequency = .default
+        displayFrequency: DisplayFrequency = .default,
+        paginationPageSize: Int = 20
     ) {
         self.survivalNeighborCounts = survivalNeighborCounts
         self.birthNeighborCounts = birthNeighborCounts
@@ -44,6 +46,7 @@ public struct GameEngineConfiguration: Equatable, Codable {
         self.defaultRandomDensity = defaultRandomDensity
         self.maxPatternGenerations = maxPatternGenerations
         self.displayFrequency = displayFrequency
+        self.paginationPageSize = paginationPageSize
     }
     
     public static let `default` = GameEngineConfiguration()
