@@ -90,6 +90,22 @@ struct GameBoardView: View {
         .onDisappear { vm.pause() }
         .task { await vm.loadCurrent() }
         .errorAlert(errorMessage: $vm.errorMessage)
+        .gameErrorAlert(
+            gameError: $vm.gameError,
+            context: .gameSimulation,
+            onRecoveryAction: { action in
+                switch action {
+                case .goToBoardList:
+                    dismissToRoot()
+                case .createNew:
+                    navigationPath.append("CreateBoard")
+                case .goBack:
+                    dismiss()
+                default:
+                    vm.handleRecoveryAction(action)
+                }
+            }
+        )
         .alert("Generation Limit Reached", isPresented: $vm.showGenerationLimitAlert) {
             Button("OK") { vm.showGenerationLimitAlert = false }
         } message: {

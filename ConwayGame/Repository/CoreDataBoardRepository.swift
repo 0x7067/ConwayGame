@@ -75,38 +75,63 @@ final class CoreDataBoardRepository: BoardRepository, @unchecked Sendable {
             entity.setValue(self.encodeCells(board.cells), forKey: "cellsData")
             entity.setValue(self.encodeCells(board.initialCells), forKey: "initialCellsData")
             entity.setValue(try self.encodeHistory(board.stateHistory), forKey: "stateHistoryData")
-            do { try context.save(); Logger.persistence.info("Saved board \(board.id.uuidString)") }
-            catch { Logger.persistence.error("Save error: \(String(describing: error))"); throw error }
+            do { 
+                try context.save() 
+                Logger.persistence.info("Saved board \(board.id.uuidString)") 
+            } catch { 
+                Logger.persistence.error("Save error: \(String(describing: error))")
+                throw GameError.persistenceError("Failed to save board data: \(error.localizedDescription)")
+            }
         }
     }
 
     func load(id: UUID) async throws -> Board? {
         let context = container.viewContext
-        return try await context.perform {
-            let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
-            fetch.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            guard let obj = try context.fetch(fetch).first else { return nil }
-            return try self.map(obj)
+        do {
+            return try await context.perform {
+                let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+                fetch.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+                guard let obj = try context.fetch(fetch).first else { return nil }
+                return try self.map(obj)
+            }
+        } catch {
+            if error is GameError {
+                throw error
+            } else {
+                throw GameError.persistenceError("Failed to load board: \(error.localizedDescription)")
+            }
         }
     }
 
     func loadAll() async throws -> [Board] {
         let context = container.viewContext
-        return try await context.perform {
-            let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
-            let list = try context.fetch(fetch)
-            return try list.map(self.map)
+        do {
+            return try await context.perform {
+                let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+                let list = try context.fetch(fetch)
+                return try list.map(self.map)
+            }
+        } catch {
+            if error is GameError {
+                throw error
+            } else {
+                throw GameError.persistenceError("Failed to load boards: \(error.localizedDescription)")
+            }
         }
     }
 
     func delete(id: UUID) async throws {
         let context = container.newBackgroundContext()
-        try await context.perform {
-            let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
-            fetch.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-            let list = try context.fetch(fetch)
-            for obj in list { context.delete(obj) }
-            try context.save()
+        do {
+            try await context.perform {
+                let fetch: NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "BoardEntity")
+                fetch.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+                let list = try context.fetch(fetch)
+                for obj in list { context.delete(obj) }
+                try context.save()
+            }
+        } catch {
+            throw GameError.persistenceError("Failed to delete board: \(error.localizedDescription)")
         }
     }
 

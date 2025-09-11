@@ -16,6 +16,7 @@
 - [ ] **Repository Layer** (Core Data, persistence)
 - [ ] **UI Layer** (SwiftUI views, view models)
 - [ ] **CLI Tool** (ConwayCLI executable)
+- [ ] **Error Handling & UX** (User-friendly error messages, recovery actions)
 - [ ] **Testing** (Test improvements or new tests)
 - [ ] **Documentation** (README, CONTRIBUTING, code docs)
 
@@ -35,6 +36,7 @@
 - [ ] **Manual Testing**: Tested on iOS simulator/device
 - [ ] **Performance Testing**: No regression in game computation performance
 - [ ] **UI Testing**: Verified UI changes work correctly across different device sizes
+- [ ] **Error Handling Testing**: Verified error scenarios and recovery actions work correctly
 - [ ] **CLI Testing**: Verified CLI functionality (if applicable)
 
 ## Screenshots/Videos

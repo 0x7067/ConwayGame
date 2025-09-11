@@ -92,6 +92,12 @@ The codebase follows a layered architecture designed for future extensibility an
    - FactoryKit-based container managing all service dependencies and configurations
    - Ensures consistent object graph and configuration throughout app
 
+7. **Error Handling & User Experience** (`Utils/`)
+   - `UserFriendlyError.swift`: Protocol-based system for transforming technical errors into user-friendly messages
+   - `ErrorAlertModifier.swift`: SwiftUI integration with contextual recovery actions and smart error alerts
+   - Context-aware recovery actions (.boardLoading, .gameSimulation, .dataPersistence)
+   - Comprehensive error transformation covering all Conway Game scenarios
+
 ### Key Design Patterns
 
 - **Protocol-oriented design**: All major components are protocol-based for testability
@@ -100,6 +106,7 @@ The codebase follows a layered architecture designed for future extensibility an
 - **Configuration management**: Centralized configuration system eliminates magic numbers
 - **Dependency injection**: FactoryKit-based dependency injection ensures consistent configurations across iOS and CLI
 - **Convergence detection**: Uses state hashing and history tracking for cycle/stability detection
+- **User-friendly error handling**: Context-aware error transformation with actionable recovery options
 
 ## Testing Structure
 
@@ -107,7 +114,8 @@ The codebase follows a layered architecture designed for future extensibility an
 - `GameServiceTests.swift`: Service layer integration tests
 - `ConvergenceDetectorTests.swift`: Convergence detection algorithms
 - `BoardRepositoryTests.swift`: Persistence layer tests
-- `ViewModelTests.swift`: UI logic tests
+- `ViewModelTests.swift`: UI logic tests and error handling integration  
+- `UserFriendlyErrorTests.swift`: Error transformation, recovery actions, and context-aware behavior
 
 ## Performance Considerations
 
@@ -132,7 +140,8 @@ The codebase follows a layered architecture designed for future extensibility an
 - `Board.swift`: Extend data model (ensure validation updates)
 - `FactoryContainer.swift`: Register new dependencies and configurations
 - `ThemeManager.swift`: UI theming and appearance management
-- `ErrorAlertModifier.swift`: Standardized error presentation
+- `UserFriendlyError.swift`: Extend error transformation system for new error types or contexts
+- `ErrorAlertModifier.swift`: Enhanced error presentation with contextual recovery actions
 - `LRUCache.swift`: Performance optimization for caching
 - `DesignTokens.swift`: UI design system constants
 - `ConvergenceDetector.swift`: Enhance convergence detection algorithms
@@ -146,7 +155,7 @@ The codebase follows a layered architecture designed for future extensibility an
 
 - Game logic is completely UI-independent for future platform portability
 - All async operations use structured concurrency
-- Comprehensive error handling with typed errors
+- User-friendly error handling with contextual recovery actions transforms technical errors into actionable guidance
 - State validation occurs at model level with throwing initializers
 - Logging uses OSLog framework with categorized loggers
 - Configuration system eliminates magic numbers and ensures consistency across platforms

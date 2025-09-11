@@ -7,6 +7,7 @@ final class GameViewModel: ObservableObject {
     @Published var state: GameState?
     @Published var isPlaying: Bool = false
     @Published var errorMessage: String?
+    @Published var gameError: GameError?
     @Published var isFinalLocked: Bool = false
     @Published var playSpeed: PlaySpeed = .normal
     @Published var boardName: String = ""
@@ -34,7 +35,7 @@ final class GameViewModel: ObservableObject {
     func loadCurrent() async {
         do {
             guard let board = try await repository.load(id: boardId) else {
-                self.errorMessage = "Board not found"
+                self.gameError = .boardNotFound(boardId)
                 return
             }
             let population = board.cells.population
@@ -48,7 +49,11 @@ final class GameViewModel: ObservableObject {
             self.boardName = board.name
             self.isFinalLocked = false
         } catch {
-            self.errorMessage = error.localizedDescription
+            if let gameError = error as? GameError {
+                self.gameError = gameError
+            } else {
+                self.gameError = .persistenceError(error.localizedDescription)
+            }
         }
     }
 
@@ -58,7 +63,7 @@ final class GameViewModel: ObservableObject {
         case .success(let s):
             self.state = s
         case .failure(let e):
-            self.errorMessage = e.localizedDescription
+            self.gameError = e
         }
     }
 
@@ -69,16 +74,23 @@ final class GameViewModel: ObservableObject {
             self.state = s
             // Update the board in repository to sync with jumped state
             do {
-                guard var board = try await repository.load(id: boardId) else { return }
+                guard var board = try await repository.load(id: boardId) else { 
+                    self.gameError = .boardNotFound(boardId)
+                    return 
+                }
                 board.cells = s.cells
                 board.currentGeneration = s.generation
                 board.stateHistory = [BoardHashing.hash(for: s.cells)]
                 try await repository.save(board)
             } catch {
-                self.errorMessage = error.localizedDescription
+                if let gameError = error as? GameError {
+                    self.gameError = gameError
+                } else {
+                    self.gameError = .persistenceError(error.localizedDescription)
+                }
             }
         case .failure(let e):
-            self.errorMessage = e.localizedDescription
+            self.gameError = e
         }
     }
 
@@ -92,7 +104,7 @@ final class GameViewModel: ObservableObject {
             if case .generationLimitExceeded = e {
                 self.showGenerationLimitAlert = true
             } else {
-                self.errorMessage = e.localizedDescription
+                self.gameError = e
             }
         }
     }
@@ -111,7 +123,11 @@ final class GameViewModel: ObservableObject {
             self.pause()
             self.isFinalLocked = false
         } catch {
-            self.errorMessage = error.localizedDescription
+            if let gameError = error as? GameError {
+                self.gameError = gameError
+            } else {
+                self.gameError = .persistenceError(error.localizedDescription)
+            }
         }
     }
 
@@ -140,5 +156,18 @@ final class GameViewModel: ObservableObject {
         playTask = nil
     }
 
+    func handleRecoveryAction(_ action: ErrorRecoveryAction) {
+        switch action {
+        case .retry:
+            Task { await loadCurrent() }
+        case .resetBoard:
+            Task { await reset() }
+        case .tryAgain:
+            Task { await step() }
+        case .goBack, .goToBoardList, .createNew, .continueWithoutSaving, .cancel, .contactSupport:
+            break
+        }
+    }
+    
     deinit { playTask?.cancel() }
 }

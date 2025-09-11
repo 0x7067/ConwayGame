@@ -77,7 +77,7 @@ This project follows a clean, layered architecture designed for maintainability 
 - `Repository/`: Data persistence abstraction
 - `ViewModels/`: SwiftUI MVVM coordinators
 - `Views/`: SwiftUI user interface
-- `Utils/`: Shared utilities, dependency injection (`FactoryContainer`), theming (`ThemeManager`), error handling (`ErrorAlertModifier`), caching (`LRUCache`), design tokens (`DesignTokens`)
+- `Utils/`: Shared utilities, dependency injection (`FactoryContainer`), theming (`ThemeManager`), user-friendly error handling (`UserFriendlyError`, `ErrorAlertModifier`), caching (`LRUCache`), design tokens (`DesignTokens`)
 
 ### Design Patterns
 
@@ -86,6 +86,7 @@ This project follows a clean, layered architecture designed for maintainability 
 - **MVVM**: ViewModels coordinate between UI and services
 - **Configuration management**: Centralized system eliminates magic numbers across platforms
 - **Dependency Injection**: `FactoryContainer` manages object graph and configurations using FactoryKit
+- **User-friendly error handling**: Context-aware error transformation with actionable recovery options
 - **Async/await**: Modern concurrency throughout
 
 ## Development Workflow
@@ -178,6 +179,7 @@ swift test
 - Test component interactions
 - Verify data persistence workflows
 - Test complete user scenarios
+- Test error handling workflows and recovery actions
 
 **Performance Tests**
 - Measure computation times for large grids

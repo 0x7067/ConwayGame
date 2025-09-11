@@ -72,6 +72,11 @@ struct BoardListView: View {
             }
         }
         .task { await vm.load() }
+        .gameErrorAlert(
+            gameError: $vm.gameError,
+            context: .boardList,
+            onRecoveryAction: vm.handleRecoveryAction
+        )
         .fullScreenCover(isPresented: $showingCreate) {
             CreateBoardRoot(onCreated: { id in
                 createdId = id
