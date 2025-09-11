@@ -61,36 +61,44 @@ The codebase follows a layered architecture designed for future extensibility an
 
 ### Core Layers
 
-1. **Pure Game Logic Layer** (`Services/GameEngine.swift`)
-   - `GameEngine` protocol: Core Conway's Game of Life computation
-   - `ConwayGameEngine`: Optimized implementation with early termination for stable states
-   - `GameRules`: Static methods for cell survival/birth logic and neighbor counting
+1. **Configuration System** (`ConwayGameEngine/Sources/ConwayGameEngine/`)
+   - `GameEngineConfiguration`: Configurable Conway rules and simulation parameters
+   - `PlaySpeedConfiguration`: Animation timing configuration for iOS and CLI
+   - Supports multiple rule variants (Conway, HighLife, Day and Night)
+   - Eliminates magic numbers and ensures cross-platform consistency
 
-2. **Data Layer** (`Models/`)
+2. **Pure Game Logic Layer** (`Services/GameEngine.swift`)
+   - `GameEngine` protocol: Core Conway's Game of Life computation
+   - `ConwayGameEngine`: Optimized implementation with configurable rules and early termination
+   - `GameRules`: Static methods for cell survival/birth logic using configurable neighbor counts
+
+3. **Data Layer** (`Models/`)
    - `Board`: Main entity with validation, state history for convergence detection
    - `GameState`: Represents computed state at specific generation
    - `GameError`: Comprehensive error handling enumeration
    - `ConvergenceType`: Tracks game state evolution (continuing/extinct/cyclical)
 
-3. **Service Layer** (`Services/GameService.swift`)
+4. **Service Layer** (`Services/GameService.swift`)
    - `GameService` protocol: Business logic orchestration
    - `DefaultGameService`: Coordinates game engine, persistence, and convergence detection
    - Async/await patterns for all operations
 
-4. **Repository Pattern** (`Repository/`)
+5. **Repository Pattern** (`Repository/`)
    - `BoardRepository` protocol: Persistence abstraction
    - `CoreDataBoardRepository`: Core Data implementation
    - Complete CRUD operations for boards
 
-5. **Dependency Injection** (`Utils/ServiceContainer.swift`)
-   - Singleton container managing all service dependencies
-   - Ensures consistent object graph throughout app
+6. **Dependency Injection** (`Utils/ServiceContainer.swift`)
+   - Singleton container managing all service dependencies and configurations
+   - Ensures consistent object graph and configuration throughout app
 
 ### Key Design Patterns
 
 - **Protocol-oriented design**: All major components are protocol-based for testability
 - **Repository pattern**: Abstracts persistence layer
 - **MVVM**: ViewModels coordinate between UI and services
+- **Configuration management**: Centralized configuration system eliminates magic numbers
+- **Dependency injection**: Configurations injected consistently across iOS and CLI
 - **Convergence detection**: Uses state hashing and history tracking for cycle/stability detection
 
 ## Testing Structure
@@ -117,10 +125,12 @@ The codebase follows a layered architecture designed for future extensibility an
 
 ## Key Files for Extension
 
-- `GameEngine.swift`: Modify game rules or add new algorithms
+- `GameEngineConfiguration.swift`: Add new rule variants or simulation parameters
+- `PlaySpeedConfiguration.swift`: Modify timing configurations for iOS and CLI
+- `GameEngine.swift`: Modify game computation algorithms or add optimizations
 - `GameService.swift`: Add new game operations or API endpoints
 - `Board.swift`: Extend data model (ensure validation updates)
-- `ServiceContainer.swift`: Register new dependencies
+- `ServiceContainer.swift`: Register new dependencies and configurations
 - `ConvergenceDetector.swift`: Enhance convergence detection algorithms
 
 ### Documentation Files
@@ -135,6 +145,9 @@ The codebase follows a layered architecture designed for future extensibility an
 - Comprehensive error handling with typed errors
 - State validation occurs at model level with throwing initializers
 - Logging uses OSLog framework with categorized loggers
+- Configuration system eliminates magic numbers and ensures consistency across platforms
+- Multiple rule variants supported: Conway (default), HighLife, Day and Night
+- CLI supports runtime configuration overrides via command-line options
 
 ### Documentation Maintenance
 
