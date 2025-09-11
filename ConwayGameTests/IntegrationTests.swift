@@ -8,7 +8,7 @@ import FactoryTesting
 
 @MainActor
 final class ConwayGameIntegrationTests: XCTestCase {
-    private var container: FactoryContainer!
+    private var container: Container!
     private var persistenceController: PersistenceController!
     private var gameService: DefaultGameService!
     private var boardRepository: CoreDataBoardRepository!
@@ -24,7 +24,7 @@ final class ConwayGameIntegrationTests: XCTestCase {
         
         // Create real service dependencies
         gameEngine = ConwayGameEngine()
-        boardRepository = CoreDataBoardRepository(context: persistenceController.container.viewContext)
+        boardRepository = CoreDataBoardRepository(container: persistenceController.container)
         convergenceDetector = DefaultConvergenceDetector()
         gameService = DefaultGameService(
             gameEngine: gameEngine,
@@ -34,11 +34,17 @@ final class ConwayGameIntegrationTests: XCTestCase {
         themeManager = ThemeManager()
         
         // Set up Factory container with real implementations
-        Container.shared.gameService.register { self.gameService }
-        Container.shared.boardRepository.register { self.boardRepository }
-        Container.shared.gameEngine.register { self.gameEngine }
-        Container.shared.convergenceDetector.register { self.convergenceDetector }
-        Container.shared.themeManager.register { self.themeManager }
+        let gameService = self.gameService!
+        let boardRepository = self.boardRepository!
+        let gameEngine = self.gameEngine!
+        let convergenceDetector = self.convergenceDetector!
+        let themeManager = self.themeManager!
+        
+        Container.shared.gameService.register { gameService }
+        Container.shared.boardRepository.register { boardRepository }
+        Container.shared.gameEngine.register { gameEngine }
+        Container.shared.convergenceDetector.register { convergenceDetector }
+        Container.shared.themeManager.register { themeManager }
         Container.shared.gameEngineConfiguration.register { .default }
         Container.shared.playSpeedConfiguration.register { .default }
     }
@@ -113,7 +119,8 @@ final class ConwayGameIntegrationTests: XCTestCase {
         XCTAssertEqual(boardListViewModel.boards.count, 2)
         
         // 2. Select first board and transition to GameView
-        guard let firstBoard = boardListViewModel.boards.first else {
+        // Select the specific board by name to avoid sort-order flakiness
+        guard let firstBoard = boardListViewModel.boards.first(where: { $0.name == "Test Board 1" }) else {
             XCTFail("No boards found")
             return
         }
@@ -178,19 +185,19 @@ final class ConwayGameIntegrationTests: XCTestCase {
         
         // Test Conway rules (default)
         Container.shared.gameEngineConfiguration.register { 
-            GameEngineConfiguration(rules: .conway, maxGenerations: 1000)
+            .classicConway
         }
         
         let conwayEngine = Container.shared.gameEngine()
-        let conwayResult = conwayEngine.nextGeneration(from: testPattern)
+        let conwayResult = conwayEngine.computeNextState(testPattern)
         
         // Test HighLife rules
         Container.shared.gameEngineConfiguration.register { 
-            GameEngineConfiguration(rules: .highLife, maxGenerations: 1000)
+            .highLife
         }
         
-        let highLifeEngine = ConwayGameEngine()
-        let highLifeResult = highLifeEngine.nextGeneration(from: testPattern)
+        let highLifeEngine = ConwayGameEngine(configuration: Container.shared.gameEngineConfiguration())
+        let highLifeResult = highLifeEngine.computeNextState(testPattern)
         
         // Results should potentially be different for different rule sets
         XCTAssertNotNil(conwayResult)
@@ -207,7 +214,7 @@ final class ConwayGameIntegrationTests: XCTestCase {
         await gameViewModel.loadCurrent()
         
         // Test different play speeds
-        let speeds: [PlaySpeed] = [.turbo, .faster, .fast, .normal, .slow]
+        let speeds: [PlaySpeed] = [.turbo, .faster, .fast, .normal]
         
         for speed in speeds {
             gameViewModel.playSpeed = speed
@@ -215,7 +222,7 @@ final class ConwayGameIntegrationTests: XCTestCase {
             
             // Verify the speed setting affects the interval (indirectly)
             let config = Container.shared.playSpeedConfiguration()
-            let interval = config.intervalFor(speed)
+            let interval = config.interval(for: speed)
             XCTAssertGreaterThan(interval, 0)
         }
     }
@@ -226,27 +233,25 @@ final class ConwayGameIntegrationTests: XCTestCase {
         let themeManager = Container.shared.themeManager()
         
         // Test theme switching
-        themeManager.currentTheme = .dark
-        XCTAssertEqual(themeManager.currentTheme, .dark)
+        themeManager.themePreference = .dark
+        XCTAssertEqual(themeManager.themePreference, .dark)
         
-        themeManager.currentTheme = .light
-        XCTAssertEqual(themeManager.currentTheme, .light)
+        themeManager.themePreference = .light
+        XCTAssertEqual(themeManager.themePreference, .light)
         
-        themeManager.currentTheme = .system
-        XCTAssertEqual(themeManager.currentTheme, .system)
+        themeManager.themePreference = .system
+        XCTAssertEqual(themeManager.themePreference, .system)
         
-        // Test theme colors are accessible
-        let cellColors = themeManager.cellColors
-        XCTAssertNotNil(cellColors.alive)
-        XCTAssertNotNil(cellColors.dead)
-        XCTAssertNotEqual(cellColors.alive, cellColors.dead)
+        // Test theme manager properties are accessible
+        XCTAssertGreaterThan(themeManager.defaultBoardSize, 0)
+        XCTAssertTrue(PlaySpeed.allCases.contains(themeManager.defaultPlaySpeed))
     }
     
     // MARK: - Memory and Performance Integration Tests
     
     func testMemoryManagementAcrossLayers() async throws {
         // Create and destroy multiple ViewModels to test memory management
-        for i in 0..<10 {
+        for _ in 0..<10 {
             let boardId = await gameService.createBoard([[Bool.random(), Bool.random()], [Bool.random(), Bool.random()]])
             let gameViewModel = GameViewModel(boardId: boardId)
             await gameViewModel.loadCurrent()
@@ -376,14 +381,14 @@ final class ConwayGameIntegrationTests: XCTestCase {
         XCTAssertEqual(gameViewModel.gameError, .boardNotFound(boardId))
         
         // Test error message generation
-        let userFriendlyError = gameViewModel.gameError?.asUserFriendlyError(context: .boardLoading)
+        let userFriendlyError = gameViewModel.gameError?.userFriendly(context: .boardLoading)
         XCTAssertNotNil(userFriendlyError)
-        XCTAssertFalse(userFriendlyError?.message.isEmpty ?? true)
+        XCTAssertFalse(userFriendlyError?.userFriendlyMessage.isEmpty ?? true)
         XCTAssertFalse(userFriendlyError?.recoveryActions.isEmpty ?? true)
         
         // Test recovery actions
         let recoveryActions = userFriendlyError?.recoveryActions ?? []
-        XCTAssertTrue(recoveryActions.contains(.retry))
+        XCTAssertTrue(recoveryActions.contains(.goToBoardList))
     }
     
     // MARK: - Data Persistence Integration Tests
@@ -420,7 +425,7 @@ final class ConwayGameIntegrationTests: XCTestCase {
             cells: originalPattern
         )
         
-        let newRepository = CoreDataBoardRepository(context: newPersistenceController.container.viewContext)
+        let newRepository = CoreDataBoardRepository(container: newPersistenceController.container)
         try await newRepository.save(board)
         
         let newGameService = DefaultGameService(

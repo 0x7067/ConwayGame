@@ -110,7 +110,7 @@ class IntegrationTestEnvironment {
         
         // Create real service dependencies
         gameEngine = ConwayGameEngine()
-        boardRepository = CoreDataBoardRepository(context: persistenceController.container.viewContext)
+        boardRepository = CoreDataBoardRepository(container: persistenceController.container)
         convergenceDetector = DefaultConvergenceDetector()
         gameService = DefaultGameService(
             gameEngine: gameEngine,
@@ -119,12 +119,18 @@ class IntegrationTestEnvironment {
         )
         themeManager = ThemeManager()
         
-        // Register dependencies in Factory container
-        Container.shared.gameService.register { self.gameService }
-        Container.shared.boardRepository.register { self.boardRepository }
-        Container.shared.gameEngine.register { self.gameEngine }
-        Container.shared.convergenceDetector.register { self.convergenceDetector }
-        Container.shared.themeManager.register { self.themeManager }
+        // Register dependencies in Factory container (capture references to avoid Sendable issues)
+        let gameService = self.gameService!
+        let boardRepository = self.boardRepository!
+        let gameEngine = self.gameEngine!
+        let convergenceDetector = self.convergenceDetector!
+        let themeManager = self.themeManager!
+        
+        Container.shared.gameService.register { gameService }
+        Container.shared.boardRepository.register { boardRepository }
+        Container.shared.gameEngine.register { gameEngine }
+        Container.shared.convergenceDetector.register { convergenceDetector }
+        Container.shared.themeManager.register { themeManager }
         Container.shared.gameEngineConfiguration.register { .default }
         Container.shared.playSpeedConfiguration.register { .default }
     }
@@ -263,7 +269,7 @@ extension XCTestCase {
     /// Wait for async operation with timeout
     func waitForAsync<T>(
         timeout: TimeInterval = 5.0,
-        operation: () async throws -> T,
+        operation: @escaping () async throws -> T,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws -> T {
@@ -343,7 +349,7 @@ class ConcurrentTestRunner {
         count: Int,
         operation: @escaping (Int) async throws -> T
     ) async throws -> [T] {
-        return try await withTaskGroup(of: (Int, T).self) { group in
+        return try await withThrowingTaskGroup(of: (Int, T).self) { group in
             // Add all tasks
             for i in 0..<count {
                 group.addTask {
@@ -360,7 +366,7 @@ class ConcurrentTestRunner {
             
             // Sort by index and return values
             results.sort { $0.0 < $1.0 }
-            return results.map { $1 }
+            return results.map { $0.1 }
         }
     }
     
@@ -370,9 +376,9 @@ class ConcurrentTestRunner {
         validation: @escaping ([T]) throws -> Void
     ) async throws {
         for _ in 0..<iterations {
-            let results = try await runConcurrentOperations(count: 10, operation: { _ in
+            let results = try await runConcurrentOperations(count: 10) { _ in
                 try await operation()
-            })
+            }
             
             try validation(results)
         }
@@ -455,8 +461,8 @@ enum TestError: Error, LocalizedError {
 
 // MARK: - Timeout Utility
 
-func withTimeout<T>(_ timeout: TimeInterval, operation: () async throws -> T) async throws -> T {
-    return try await withTaskGroup(of: T?.self) { group in
+func withTimeout<T>(_ timeout: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    return try await withThrowingTaskGroup(of: T?.self) { group in
         // Add the main operation
         group.addTask {
             try await operation()
@@ -486,36 +492,36 @@ func withTimeout<T>(_ timeout: TimeInterval, operation: () async throws -> T) as
 
 // MARK: - Grid Utilities
 
-extension CellsGrid {
-    
-    /// Count living cells in the grid
-    var populationCount: Int {
-        return self.flatMap { $0 }.filter { $0 }.count
-    }
-    
-    /// Create a padded version of the grid (add border of dead cells)
-    func padded(by padding: Int = 1) -> CellsGrid {
-        let newWidth = (self.first?.count ?? 0) + (padding * 2)
-        let newHeight = self.count + (padding * 2)
-        
-        var paddedGrid = Array(repeating: Array(repeating: false, count: newWidth), count: newHeight)
-        
-        for (rowIndex, row) in self.enumerated() {
-            for (colIndex, cell) in row.enumerated() {
-                paddedGrid[rowIndex + padding][colIndex + padding] = cell
-            }
-        }
-        
-        return paddedGrid
-    }
-    
-    /// Get a description string for debugging
-    func debugDescription() -> String {
-        return self.map { row in
-            row.map { $0 ? "●" : "○" }.joined()
-        }.joined(separator: "\n")
-    }
-}
+// extension CellsGrid {
+//     
+//     /// Count living cells in the grid
+//     var populationCount: Int {
+//         return self.flatMap { (row: [Bool]) -> [Bool] in row }.filter { (cell: Bool) -> Bool in cell }.count
+//     }
+//     
+//     /// Create a padded version of the grid (add border of dead cells)
+//     func padded(by padding: Int = 1) -> CellsGrid {
+//         let newWidth = (self.first?.count ?? 0) + (padding * 2)
+//         let newHeight = self.count + (padding * 2)
+//         
+//         var paddedGrid = Array(repeating: Array(repeating: false, count: newWidth), count: newHeight)
+//         
+//         for (rowIndex, row) in self.enumerated() {
+//             for (colIndex, cell) in row.enumerated() {
+//                 paddedGrid[rowIndex + padding][colIndex + padding] = cell
+//             }
+//         }
+//         
+//         return paddedGrid
+//     }
+//     
+//     /// Get a description string for debugging
+//     func debugDescription() -> String {
+//         return self.map { (row: [Bool]) -> String in
+//             row.map { (cell: Bool) -> String in cell ? "●" : "○" }.joined()
+//         }.joined(separator: "\n")
+//     }
+// }
 
 // MARK: - Test Configuration
 
