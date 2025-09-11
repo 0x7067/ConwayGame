@@ -40,6 +40,7 @@ Welcome! This project implements Conway's Game of Life as a production-ready iOS
    ```bash
    cd ConwayGameEngine
    swift run conway-cli pattern glider
+   swift run conway-cli run 10 10 20 random --density=0.3 --rules=highlife
    ```
 
 ## Project Architecture
@@ -63,10 +64,12 @@ This project follows a clean, layered architecture designed for maintainability 
 ### Key Components
 
 **ConwayGameEngine Package** (`ConwayGameEngine/`)
-- `GameEngine.swift`: Core Conway's Game of Life computation
+- `GameEngineConfiguration.swift`: Configurable rule sets and simulation parameters
+- `PlaySpeedConfiguration.swift`: Animation timing configuration for iOS and CLI
+- `GameEngine.swift`: Core Conway's Game of Life computation with configurable rules
 - `ConvergenceDetector.swift`: Detects cycles and stable states
 - `Patterns.swift`: Predefined patterns (glider, pulsar, etc.)
-- `ConwayCLI/`: Terminal executable for simulations
+- `ConwayCLI/`: Terminal executable for simulations with configuration options
 
 **iOS App** (`ConwayGame/`)
 - `Models/`: Core Data entities (`Board`, `GameState`)
@@ -81,7 +84,8 @@ This project follows a clean, layered architecture designed for maintainability 
 - **Protocol-oriented design**: All major components are protocol-based for testability
 - **Repository pattern**: Abstracts data persistence
 - **MVVM**: ViewModels coordinate between UI and services
-- **Dependency Injection**: `ServiceContainer` manages object graph
+- **Configuration management**: Centralized system eliminates magic numbers across platforms
+- **Dependency Injection**: `ServiceContainer` manages object graph and configurations
 - **Async/await**: Modern concurrency throughout
 
 ## Development Workflow
@@ -119,6 +123,8 @@ This project follows a clean, layered architecture designed for maintainability 
 - Use protocols for testability and dependency injection
 - Separate concerns across architectural layers
 - Handle errors with typed enumerations (`GameError`)
+- Eliminate magic numbers through centralized configuration
+- Ensure cross-platform consistency via shared configuration
 
 **Performance Guidelines**
 - Use identity checking in game engine (return same instance when unchanged)
@@ -216,7 +222,8 @@ Before submitting a pull request:
 We welcome contributions in these areas:
 
 ### Core Engine Enhancements
-- **New game rules**: Implement variants like HighLife or Seeds
+- **Additional game rules**: Add new rule variants beyond Conway, HighLife, and Day and Night
+- **Configuration extensions**: Add new configurable parameters to GameEngineConfiguration
 - **Performance optimizations**: Improve large grid computation
 - **Pattern library**: Add more interesting predefined patterns
 - **Algorithm improvements**: Enhanced convergence detection

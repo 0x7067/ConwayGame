@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 public enum ThemePreference: String, CaseIterable {
     case system = "system"
@@ -10,31 +11,6 @@ public enum ThemePreference: String, CaseIterable {
         case .system: return "System"
         case .light: return "Light"
         case .dark: return "Dark"
-        }
-    }
-}
-
-public enum PlaySpeed: CaseIterable {
-    case normal
-    case fast
-    case faster
-    case turbo
-    
-    public var displayName: String {
-        switch self {
-        case .normal: return "1x"
-        case .fast: return "2x"
-        case .faster: return "4x"
-        case .turbo: return "8x"
-        }
-    }
-    
-    public var interval: UInt64 {
-        switch self {
-        case .normal: return 500_000_000
-        case .fast: return 250_000_000
-        case .faster: return 125_000_000
-        case .turbo: return 62_500_000
         }
     }
 }
@@ -58,7 +34,11 @@ public class ThemeManager: ObservableObject {
         }
     }
     
-    public init() {
+    private let playSpeedConfiguration: PlaySpeedConfiguration
+    
+    public init(playSpeedConfiguration: PlaySpeedConfiguration = .default) {
+        self.playSpeedConfiguration = playSpeedConfiguration
+        
         let savedPreference = UserDefaults.standard.string(forKey: "themePreference") ?? ThemePreference.system.rawValue
         self.themePreference = ThemePreference(rawValue: savedPreference) ?? .system
         
@@ -67,6 +47,10 @@ public class ThemeManager: ObservableObject {
         
         let savedSpeedName = UserDefaults.standard.string(forKey: "defaultPlaySpeed") ?? PlaySpeed.normal.displayName
         self.defaultPlaySpeed = PlaySpeed.allCases.first { $0.displayName == savedSpeedName } ?? .normal
+    }
+    
+    public func interval(for speed: PlaySpeed) -> UInt64 {
+        return playSpeedConfiguration.interval(for: speed)
     }
     
     public var colorScheme: ColorScheme? {

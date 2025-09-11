@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct BoardListView: View {
     @StateObject private var vm: BoardListViewModel
@@ -10,8 +11,8 @@ struct BoardListView: View {
     @EnvironmentObject private var themeManager: ThemeManager
     @Binding var navigationPath: NavigationPath
 
-    init(gameService: GameService, repository: BoardRepository, navigationPath: Binding<NavigationPath>) {
-        _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService, repository: repository))
+    init(gameService: GameService, repository: BoardRepository, gameEngineConfiguration: GameEngineConfiguration, navigationPath: Binding<NavigationPath>) {
+        _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService, repository: repository, gameEngineConfiguration: gameEngineConfiguration))
         _navigationPath = navigationPath
     }
 
@@ -108,10 +109,11 @@ struct BoardListView: View {
 
 #Preview {
     @Previewable @State var path = NavigationPath()
-    return NavigationStack(path: $path) {
+    NavigationStack(path: $path) {
         BoardListView(
             gameService: ServiceContainer.shared.gameService, 
             repository: ServiceContainer.shared.boardRepository,
+            gameEngineConfiguration: ServiceContainer.shared.gameEngineConfiguration,
             navigationPath: $path
         )
     }

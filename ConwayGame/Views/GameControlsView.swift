@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct GameControlsView: View {
     let isPlaying: Bool

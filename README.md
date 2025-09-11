@@ -18,26 +18,39 @@ The CLI lives in the Swift package at `ConwayGameEngine`.
   - `swift run conway-cli --help`
 
 - Commands:
-  - `conway-cli run <width> <height> <generations> [pattern]`
+  - `conway-cli run <width> <height> <generations> [pattern] [--density=<value>] [--rules=<name>]`
     - Runs a simulation with the given grid size and generation count
     - Optional `pattern`: `random`, `empty`, or a named pattern
-  - `conway-cli pattern <name>`
+    - `--density`: Random density (0.0-1.0), default: 0.25
+    - `--rules`: Rule preset (conway, highlife, daynight), default: conway
+  - `conway-cli pattern <name> [--rules=<name>]`
     - Runs a predefined pattern for a short showcase
+    - `--rules`: Rule preset (conway, highlife, daynight), default: conway
 
 - Examples:
   - `swift run conway-cli run 20 20 50 random`
-  - `swift run conway-cli run 10 10 25 empty`
-  - `swift run conway-cli pattern glider`
+  - `swift run conway-cli run 10 10 25 empty --density=0.4`
+  - `swift run conway-cli run 15 15 30 random --rules=highlife`
+  - `swift run conway-cli pattern glider --rules=daynight`
 
 Available patterns: `block`, `beehive`, `blinker`, `toad`, `beacon`, `glider`, `pulsar`, `gospergun`.
 
 Output uses `*` for alive and `.` for dead.
 
-## Rules (Conway's Game of Life)
-- Neighborhood: Moore (8 surrounding cells).
-- Survival: a live cell with 2 or 3 neighbors stays alive.
-- Birth: a dead cell with exactly 3 neighbors becomes alive.
-- Otherwise: the cell is dead in the next generation.
+## Rules & Variants
+The engine supports multiple configurable rule sets:
+
+### Conway's Game of Life (Default)
+- Neighborhood: Moore (8 surrounding cells)
+- Survival: a live cell with 2 or 3 neighbors stays alive
+- Birth: a dead cell with exactly 3 neighbors becomes alive
+- Otherwise: the cell is dead in the next generation
+
+### Additional Rule Variants
+- **HighLife**: Conway rules + birth on 6 neighbors
+- **Day and Night**: Survival on 3,4,6,7,8 neighbors; birth on 3,6,7,8 neighbors
+
+Use `--rules=<name>` in CLI or configure programmatically in the iOS app.
 
 ## Finish Criteria & Limits
 - Finished states (engine/app/CLI):
@@ -48,12 +61,12 @@ Output uses `*` for alive and `.` for dead.
   - Final state search cap: attempts up to 500 generations; if living cells remain with no cycle/extinction, it reports that the generation limit was reached.
 - CLI behavior:
   - `run`: runs exactly the number of generations requested, but stops early on extinction or when a repeated state is detected.
-  - `pattern`: showcases up to 50 generations with short delays; also stops early if the pattern stabilizes.
+  - `pattern`: showcases up to configurable generations (default: 50) with short delays; also stops early if the pattern stabilizes.
 
 ## Assumptions
 - Bounded grid: no wrap-around at edges (cells outside the grid are always dead).
 - Synchronous updates: the next generation is computed from the entire current state.
-- CLI `random` starts with ~30% alive cells.
+- CLI `random` starts with configurable density (default: 25% alive cells).
 - Sim termination hints in CLI: stops on extinction or when a previously seen state recurs (cycle detected).
 
 ## Development
