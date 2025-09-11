@@ -1,9 +1,22 @@
 # Conway's Game of Life
 
+[![ConwayAPI CI](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml/badge.svg)](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml)
+
 A Swift implementation of Conway's Game of Life with:
 - An iOS app (SwiftUI) under `ConwayGame` with Core Data pagination for large datasets
 - A reusable engine as a Swift Package under `ConwayGameEngine`
 - A CLI executable target `conway-cli` for terminal simulations
+ - A REST API under `ConwayAPI` (Vapor)
+
+## Packages
+
+- `ConwayGameEngine`: Core simulation logic and patterns; includes `conway-cli`.
+  - Tests: `cd ConwayGameEngine && swift test`
+  - CLI: `cd ConwayGameEngine && swift run conway-cli --help`
+- `ConwayAPI`: REST API exposing the engine via HTTP.
+  - Docs: see `ConwayAPI/README.md`
+  - Local run: `cd ConwayAPI && swift run conway-api`
+  - Docker: `cd ConwayAPI && docker compose up`
 
 ## Quick Start (App)
 - Requirements: Xcode 15+, iOS 16+ simulator/device, macOS 13+
@@ -83,5 +96,13 @@ Performance & Scalability:
 - Core Data pagination handles large board collections efficiently
 - Comprehensive performance benchmarks validate scaling characteristics
 
+## CI
+
+GitHub Actions runs tests on Linux and macOS for Swift 5.10 and 6.0:
+- ConwayAPI unit/integration tests
+- ConwayGameEngine tests
+- `conway-cli` build check
+
+See the workflow at `.github/workflows/conwayapi-ci.yml`.
+
 ---
-If you want, I can add a `Makefile` with common tasks or expand the README with screenshots and advanced usage.
