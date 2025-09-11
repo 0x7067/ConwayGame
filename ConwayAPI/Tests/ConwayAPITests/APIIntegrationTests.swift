@@ -4,13 +4,12 @@ import XCTest
 import XCTVapor
 
 final class APIIntegrationTests: XCTestCase {
-    
     // CI environment detection
     private var isCI: Bool {
         ProcessInfo.processInfo.environment["CI"] != nil ||
-        ProcessInfo.processInfo.environment["GITHUB_ACTIONS"] != nil
+            ProcessInfo.processInfo.environment["GITHUB_ACTIONS"] != nil
     }
-    
+
     // Reduced parameters for CI
     private var maxConcurrentRequests: Int { isCI ? 3 : 20 }
     private var maxRapidRequests: Int { isCI ? 5 : 50 }
@@ -28,22 +27,22 @@ final class APIIntegrationTests: XCTestCase {
     override func tearDown() async throws {
         try await app.asyncShutdown()
     }
-    
+
     // Helper method to run operations with timeout
     private func withTimeout<T>(
         _ timeout: TimeInterval = 10.0,
-        operation: @escaping () async throws -> T
-    ) async throws -> T {
-        return try await withThrowingTaskGroup(of: T.self) { group in
+        operation: @escaping () async throws -> T) async throws -> T
+    {
+        try await withThrowingTaskGroup(of: T.self) { group in
             group.addTask {
                 try await operation()
             }
-            
+
             group.addTask {
                 try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
                 throw TimeoutError()
             }
-            
+
             guard let result = try await group.next() else {
                 throw TimeoutError()
             }
@@ -51,7 +50,7 @@ final class APIIntegrationTests: XCTestCase {
             return result
         }
     }
-    
+
     private struct TimeoutError: Error {}
 
     // MARK: - Health and Info Endpoints
@@ -435,7 +434,9 @@ final class APIIntegrationTests: XCTestCase {
         print("Rapid requests: \(successCount) successful, \(errorCount) failed/limited")
     }
 
-    func testComplexGridPatterns() async throws {\n        // Skip this test in CI to prevent hangs\n        if isCI {\n            throw XCTSkip(\"Skipping complex grid patterns test in CI environment\")\n        }
+    func testComplexGridPatterns() async throws {
+        \n // Skip this test in CI to prevent hangs\n        if isCI {\n            throw XCTSkip(\"Skipping complex
+        // grid patterns test in CI environment\")\n        }
         // Test API with complex, real-world patterns
         let complexPatterns = [
             // Spacefiller pattern (grows indefinitely)
@@ -618,7 +619,9 @@ final class APIIntegrationTests: XCTestCase {
         XCTAssertNotNil(corsResponse.headers.first(name: .accessControlAllowOrigin))
     }
 
-    func testWebSocketLikeStreaming() async throws {\n        // Skip this test in CI to prevent hangs from Task.sleep\n        if isCI {\n            throw XCTSkip(\"Skipping streaming test in CI environment\")\n        }
+    func testWebSocketLikeStreaming() async throws {
+        \n // Skip this test in CI to prevent hangs from Task.sleep\n        if isCI {\n            throw
+        // XCTSkip(\"Skipping streaming test in CI environment\")\n        }
         // Test streaming-like behavior by making sequential requests to simulate real-time updates
         let gliderPattern: PatternResponse = try await app.decode(.GET, "api/patterns/glider", expecting: .ok)
         var currentGrid = gliderPattern.grid
