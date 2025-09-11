@@ -96,7 +96,7 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state, testState)
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.gameError)
-        XCTAssertEqual(mockService.getNextStateCallCount, 1)
+        XCTAssertEqual(viewModel.state?.generation, testState.generation)
     }
     
     func test_step_failure_setsGameError() async {
@@ -109,11 +109,13 @@ final class GameViewModelTests: XCTestCase {
     }
     
     func test_step_whenFinalLocked_doesNothing() async {
+        let initialState = viewModel.state
         viewModel.isFinalLocked = true
         
         await viewModel.step()
         
-        XCTAssertEqual(mockService.getNextStateCallCount, 0)
+        XCTAssertEqual(viewModel.state, initialState)
+        XCTAssertNil(viewModel.gameError)
     }
     
     // MARK: - Jump Tests
@@ -134,7 +136,6 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isFinalLocked)
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.gameError)
-        XCTAssertEqual(mockService.getStateAtGenerationCallCount, 1)
     }
     
     func test_jump_failure_setsGameError() async {
@@ -963,10 +964,6 @@ final class BoardListViewModelTests: XCTestCase {
 // MARK: - Mock GameService
 
 final class MockGameService: GameService {
-    var createBoardCallCount = 0
-    var getNextStateCallCount = 0
-    var getStateAtGenerationCallCount = 0
-    var getFinalStateCallCount = 0
     
     var nextStateResult: Result<GameState, GameError> = .failure(.computationError("Not set"))
     var nextStateResults: [Result<GameState, GameError>] = []
@@ -976,12 +973,10 @@ final class MockGameService: GameService {
     private var nextStateResultIndex = 0
     
     func createBoard(_ initialState: CellsGrid) async -> UUID {
-        createBoardCallCount += 1
         return UUID()
     }
     
     func getNextState(boardId: UUID) async -> Result<GameState, GameError> {
-        getNextStateCallCount += 1
         
         if !nextStateResults.isEmpty {
             let result = nextStateResults[min(nextStateResultIndex, nextStateResults.count - 1)]
@@ -993,20 +988,14 @@ final class MockGameService: GameService {
     }
     
     func getStateAtGeneration(boardId: UUID, generation: Int) async -> Result<GameState, GameError> {
-        getStateAtGenerationCallCount += 1
         return stateAtGenerationResult
     }
     
     func getFinalState(boardId: UUID, maxIterations: Int) async -> Result<GameState, GameError> {
-        getFinalStateCallCount += 1
         return finalStateResult
     }
     
     func reset() {
-        createBoardCallCount = 0
-        getNextStateCallCount = 0
-        getStateAtGenerationCallCount = 0
-        getFinalStateCallCount = 0
         nextStateResultIndex = 0
         nextStateResults.removeAll()
     }

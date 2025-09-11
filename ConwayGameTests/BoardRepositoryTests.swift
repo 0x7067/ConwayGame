@@ -9,37 +9,22 @@ final class MockBoardRepository: BoardRepository {
     var shouldThrowError = false
     var errorToThrow: GameError = .computationError("Mock error")
     
-    // Call counters for test verification
-    var saveCallCount = 0
-    var loadCallCount = 0
-    var loadAllCallCount = 0
-    var loadBoardsPaginatedCallCount = 0
-    var searchBoardsCallCount = 0
-    var getTotalBoardCountCallCount = 0
-    var deleteCallCount = 0
-    var renameCallCount = 0
-    var resetCallCount = 0
-    
     func save(_ board: Board) async throws {
-        saveCallCount += 1
         if shouldThrowError { throw errorToThrow }
         storage[board.id] = board
     }
     
     func load(id: UUID) async throws -> Board? {
-        loadCallCount += 1
         if shouldThrowError { throw errorToThrow }
         return storage[id]
     }
     
     func loadAll() async throws -> [Board] {
-        loadAllCallCount += 1
         if shouldThrowError { throw errorToThrow }
         return Array(storage.values)
     }
     
     func loadBoardsPaginated(offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
-        loadBoardsPaginatedCallCount += 1
         if shouldThrowError { throw errorToThrow }
         
         // Input validation
@@ -66,7 +51,6 @@ final class MockBoardRepository: BoardRepository {
     }
     
     func searchBoards(query: String, offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
-        searchBoardsCallCount += 1
         if shouldThrowError { throw errorToThrow }
         
         // Input validation
@@ -96,10 +80,7 @@ final class MockBoardRepository: BoardRepository {
     }
     
     func getTotalBoardCount() async throws -> Int {
-        getTotalBoardCountCallCount += 1
-        if shouldThrowError {
-            throw errorToThrow
-        }
+        if shouldThrowError { throw errorToThrow }
         return storage.count
     }
     
@@ -121,13 +102,11 @@ final class MockBoardRepository: BoardRepository {
     }
     
     func delete(id: UUID) async throws {
-        deleteCallCount += 1
         if shouldThrowError { throw errorToThrow }
         storage.removeValue(forKey: id)
     }
     
     func rename(id: UUID, newName: String) async throws {
-        renameCallCount += 1
         if shouldThrowError { throw errorToThrow }
         guard var board = storage[id] else {
             throw GameError.boardNotFound(id)
@@ -137,7 +116,6 @@ final class MockBoardRepository: BoardRepository {
     }
     
     func reset(id: UUID) async throws -> Board {
-        resetCallCount += 1
         if shouldThrowError {
             throw errorToThrow
         }
@@ -155,15 +133,6 @@ final class MockBoardRepository: BoardRepository {
     func clear() {
         storage.removeAll()
         shouldThrowError = false
-        saveCallCount = 0
-        loadCallCount = 0
-        loadAllCallCount = 0
-        loadBoardsPaginatedCallCount = 0
-        searchBoardsCallCount = 0
-        getTotalBoardCountCallCount = 0
-        deleteCallCount = 0
-        renameCallCount = 0
-        resetCallCount = 0
     }
     
     func preloadBoard(_ board: Board) {
