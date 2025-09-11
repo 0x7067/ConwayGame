@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ConwayGame is a production-ready iOS implementation of Conway's Game of Life built with SwiftUI and Core Data. The architecture follows clean separation of concerns with distinct layers for game logic, persistence, and UI.
 
+## Documentation Structure
+
+This project maintains several documentation files with distinct purposes:
+
+- **CLAUDE.md** (this file): Guidance for Claude Code AI assistant when working with the codebase
+- **CONTRIBUTING.md**: Comprehensive contributor guide for human developers (setup, architecture, workflow)
+- **README.md**: Project overview and quick start instructions for end users
+- **GitHub Templates** (`.github/`): Structured templates for issues and pull requests
+  - Bug reports, feature requests, performance issues, documentation, and questions
+  - Pull request template with architecture impact assessment and testing checklists
+
 ## Build and Test Commands
 
 ```bash
@@ -29,6 +40,19 @@ xcodebuild -scheme ConwayGame -configuration Release build
 
 # Clean build folder
 xcodebuild -scheme ConwayGame clean
+
+# Swift Package commands
+cd ConwayGameEngine
+
+# Build Swift Package
+swift build
+
+# Run Swift Package tests
+swift test
+
+# Run CLI tool
+swift run conway-cli --help
+swift run conway-cli pattern glider
 ```
 
 ## Architecture Overview
@@ -99,6 +123,11 @@ The codebase follows a layered architecture designed for future extensibility an
 - `ServiceContainer.swift`: Register new dependencies
 - `ConvergenceDetector.swift`: Enhance convergence detection algorithms
 
+### Documentation Files
+- `CONTRIBUTING.md`: Update when architecture changes or new development processes are added
+- `.github/ISSUE_TEMPLATE/`: Update templates when new components are added or issue categories change
+- `.github/pull_request_template.md`: Update when new architecture layers or testing requirements are introduced
+
 ## Development Notes
 
 - Game logic is completely UI-independent for future platform portability
@@ -106,3 +135,15 @@ The codebase follows a layered architecture designed for future extensibility an
 - Comprehensive error handling with typed errors
 - State validation occurs at model level with throwing initializers
 - Logging uses OSLog framework with categorized loggers
+
+### Documentation Maintenance
+
+When making changes to the codebase, consider updating documentation:
+
+- **Architecture changes**: Update both CLAUDE.md and CONTRIBUTING.md to reflect new layers, patterns, or components
+- **New features**: Update GitHub issue templates if new feature categories are introduced
+- **Testing changes**: Update pull request template checklist and CONTRIBUTING.md testing sections
+- **Build process changes**: Update build commands in both CLAUDE.md and CONTRIBUTING.md
+- **New dependencies**: Update setup instructions in CONTRIBUTING.md
+
+Refer contributors to CONTRIBUTING.md for comprehensive setup and development workflow guidance.
