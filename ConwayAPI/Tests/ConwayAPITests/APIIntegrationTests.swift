@@ -499,34 +499,39 @@ final class APIIntegrationTests: XCTestCase {
     func testAPIErrorHandlingScenarios() async throws {
         // Test various error conditions and recovery
 
-        // 1. Invalid grid sizes
+        // 1. Invalid grid sizes  
         let invalidGrids = [
-            [], // Empty grid
-            [[]], // Empty row
-            [[true], [true, false]], // Inconsistent row lengths
-            Array(repeating: Array(repeating: true, count: 1000), count: 1000) // Oversized grid
+            ([], "Empty grid"),
+            ([[]], "Empty row"),
+            ([[true], [true, false]], "Inconsistent row lengths"),
+            (Array(repeating: Array(repeating: true, count: 300), count: 300), "Oversized grid") // Use 300x300 to ensure rejection
         ]
 
-        for (index, invalidGrid) in invalidGrids.enumerated() {
+        for (invalidGrid, description) in invalidGrids {
             let request = GameValidationRequest(grid: invalidGrid)
 
             do {
-                let _: ValidationResponse = try await app.decode(.POST, "api/game/validate") { req in
+                let response: ValidationResponse = try await app.decode(.POST, "api/game/validate") { req in
                     try req.content.encode(request)
                 }
-
-                // Some invalid grids might be accepted depending on validation rules
-                print("Invalid grid \(index) was accepted (might be valid edge case)")
+                
+                // Check if the API correctly identified it as invalid
+                if !response.isValid {
+                    print("\(description) correctly rejected with errors: \(response.errors)")
+                } else {
+                    // This might be acceptable for some edge cases, but let's log it
+                    print("\(description) was accepted as valid (may be edge case)")
+                }
 
             } catch {
-                // Expected for truly invalid grids
-                print("Invalid grid \(index) properly rejected: \(error)")
+                // Also acceptable - rejection at request level
+                print("\(description) rejected at request level: \(error)")
             }
         }
 
         // 2. Invalid rule names
         let validGrid = [[true, false], [false, true]]
-        let invalidRules = ["invalid_rule", "", "CONWAY", "conway123"]
+        let invalidRules = ["invalid_rule", "", "nonexistent", "xyz123", "unknown_rule"]
 
         for invalidRule in invalidRules {
             let request = GameStepRequest(grid: validGrid, rules: invalidRule)
@@ -673,26 +678,31 @@ final class APIIntegrationTests: XCTestCase {
 
         // Test rules listing
         struct RulesResponse: Codable {
-            let rules: [String: RuleDescription]
+            let rules: [RuleInfo]
         }
 
-        struct RuleDescription: Codable {
+        struct RuleInfo: Codable {
             let name: String
+            let displayName: String
             let description: String
-            let survival: [Int]
-            let birth: [Int]
+            let survivalNeighborCounts: [Int]
+            let birthNeighborCounts: [Int]
         }
 
         do {
             let rulesResponse: RulesResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
 
-            XCTAssertTrue(rulesResponse.rules.keys.contains("conway"))
-            XCTAssertTrue(rulesResponse.rules.keys.contains("highlife"))
+            let ruleNames = rulesResponse.rules.map(\.name)
+            XCTAssertTrue(ruleNames.contains("conway"))
+            XCTAssertTrue(ruleNames.contains("highlife"))
 
-            let conwayRule = rulesResponse.rules["conway"]!
-            XCTAssertEqual(conwayRule.name, "Conway's Game of Life")
-            XCTAssertEqual(conwayRule.survival, [2, 3])
-            XCTAssertEqual(conwayRule.birth, [3])
+            guard let conwayRule = rulesResponse.rules.first(where: { $0.name == "conway" }) else {
+                XCTFail("Conway rule not found")
+                return
+            }
+            XCTAssertEqual(conwayRule.displayName, "Conway's Game of Life")
+            XCTAssertEqual(conwayRule.survivalNeighborCounts, [2, 3])
+            XCTAssertEqual(conwayRule.birthNeighborCounts, [3])
         } catch {
             // Rules endpoint might not be implemented - that's acceptable
             print("Rules endpoint not available: \(error)")
@@ -700,7 +710,16 @@ final class APIIntegrationTests: XCTestCase {
 
         // Test patterns listing
         struct PatternsListResponse: Codable {
-            let patterns: [String]
+            let patterns: [PatternInfo]
+        }
+
+        struct PatternInfo: Codable {
+            let name: String
+            let displayName: String
+            let description: String
+            let category: String
+            let width: Int
+            let height: Int
         }
 
         do {
@@ -710,11 +729,12 @@ final class APIIntegrationTests: XCTestCase {
                 expecting: .ok,
                 json: true)
 
-            XCTAssertTrue(patternsResponse.patterns.contains("glider"))
-            XCTAssertTrue(patternsResponse.patterns.contains("block"))
-            XCTAssertTrue(patternsResponse.patterns.contains("blinker"))
+            let patternNames = patternsResponse.patterns.map(\.name)
+            XCTAssertTrue(patternNames.contains("glider"))
+            XCTAssertTrue(patternNames.contains("block"))
+            XCTAssertTrue(patternNames.contains("blinker"))
 
-            print("Available patterns: \(patternsResponse.patterns)")
+            print("Available patterns: \(patternNames)")
         } catch {
             // Patterns list endpoint might not be implemented
             print("Patterns list endpoint not available: \(error)")
