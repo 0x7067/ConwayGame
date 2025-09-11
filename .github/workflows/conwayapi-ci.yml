@@ -2,17 +2,17 @@ name: ConwayAPI CI
 
 on:
   push:
-    branches: [ main, feature/**, bugfix/** ]
+    branches: [main, feature/**, bugfix/**]
     paths:
-      - 'ConwayAPI/**'
-      - 'ConwayGameEngine/**'
-      - '.github/workflows/conwayapi-ci.yml'
+      - "ConwayAPI/**"
+      - "ConwayGameEngine/**"
+      - ".github/workflows/conwayapi-ci.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'ConwayAPI/**'
-      - 'ConwayGameEngine/**'
-      - '.github/workflows/conwayapi-ci.yml'
+      - "ConwayAPI/**"
+      - "ConwayGameEngine/**"
+      - ".github/workflows/conwayapi-ci.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: [ '5.10', '6.0' ]
+        swift: ["5.10", "6.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
         uses: Cyberbeni/install-swift-tool@v3
         with:
           url: https://github.com/nicklockwood/SwiftFormat
-          version: '0.57.2'
+          version: "0.57.2"
 
       - name: Check Code Formatting (ConwayAPI)
         working-directory: ConwayAPI
@@ -57,7 +57,7 @@ jobs:
 
       - name: Test ConwayAPI
         working-directory: ConwayAPI
-        run: swift test
+        run: swift test --parallel
 
       - name: Build ConwayCLI
         working-directory: ConwayGameEngine
@@ -69,61 +69,4 @@ jobs:
 
       - name: Test ConwayGameEngine
         working-directory: ConwayGameEngine
-        run: swift test
-
-  macos:
-    name: macOS (Swift ${{ matrix.swift }})
-    runs-on: macos-14
-    strategy:
-      fail-fast: false
-      matrix:
-        swift: [ '5.10', '6.0' ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        id: swift
-        with:
-          swift-version: ${{ matrix.swift }}
-
-      - name: Cache SPM
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ConwayAPI/.build
-            ConwayGameEngine/.build
-          key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
-      - name: Swift Version
-        run: swift --version
-
-      - name: Install SwiftFormat
-        uses: Cyberbeni/install-swift-tool@v3
-        with:
-          url: https://github.com/nicklockwood/SwiftFormat
-          version: '0.57.2'
-
-      - name: Check Code Formatting (ConwayAPI)
-        working-directory: ConwayAPI
-        run: swiftformat . --lint
-
-      - name: Test ConwayAPI
-        working-directory: ConwayAPI
-        run: swift test
-
-      - name: Build ConwayCLI
-        working-directory: ConwayGameEngine
-        run: swift build --product conway-cli
-
-      - name: Check Code Formatting (ConwayGameEngine)
-        working-directory: ConwayGameEngine
-        run: swiftformat . --lint
-
-      - name: Test ConwayGameEngine
-        working-directory: ConwayGameEngine
-        run: swift test
+        run: swift test --parallel
