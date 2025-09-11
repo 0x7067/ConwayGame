@@ -1,5 +1,5 @@
 # Build stage
-FROM swift:5.9-jammy as build
+FROM swift:5.9-jammy AS build
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,6 +19,7 @@ COPY ConwayGameEngine /app/ConwayGameEngine
 
 # Copy source code
 COPY ConwayAPI/Sources ./Sources
+COPY ConwayAPI/Tests ./Tests
 
 # Build the application
 RUN swift build -c release --static-swift-stdlib

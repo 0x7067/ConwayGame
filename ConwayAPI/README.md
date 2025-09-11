@@ -38,6 +38,39 @@ Notes:
 - Compose builds with context at the repo root to include the local engine dependency (see Dockerfile).
 - The runtime image includes `curl` for health checks.
 
+### Docker Testing
+
+Manual build and run (from repo root):
+
+```bash
+docker build -f ConwayAPI/Dockerfile -t conway-api:local .
+docker run --rm -p 8080:8080 conway-api:local
+```
+
+Smoke tests:
+
+```bash
+curl -s localhost:8080/health | jq .
+curl -s localhost:8080/api | jq .
+curl -s localhost:8080/api/patterns | jq .
+curl -s -X POST localhost:8080/api/game/step \
+  -H 'Content-Type: application/json' \
+  -d '{"grid":[[false,false,false,false,false],[false,false,true,false,false],[false,false,true,false,false],[false,false,true,false,false],[false,false,false,false,false]],"rules":"conway"}' | jq .
+```
+
+Helper script (build, run, health, smoke tests):
+
+```bash
+chmod +x ConwayAPI/scripts/verify_docker.sh
+ConwayAPI/scripts/verify_docker.sh --port 8080
+```
+
+Options:
+- `--port <host_port>`: Host port to bind (default: 8080)
+- `--image <name>`: Image tag to build (default: conway-api:verify)
+- `--platform <value>`: e.g., `linux/amd64` for cross-arch buildx
+- `--compose`: Use `docker compose` instead of `docker run`
+
 ## API Documentation
 
 ### Health Check
