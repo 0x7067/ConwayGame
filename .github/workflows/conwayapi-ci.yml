@@ -45,6 +45,16 @@ jobs:
       - name: Swift Version
         run: swift --version
 
+      - name: Install SwiftFormat
+        uses: Cyberbeni/install-swift-tool@v3
+        with:
+          url: https://github.com/nicklockwood/SwiftFormat
+          version: '0.57.2'
+
+      - name: Check Code Formatting (ConwayAPI)
+        working-directory: ConwayAPI
+        run: swiftformat . --lint
+
       - name: Test ConwayAPI
         working-directory: ConwayAPI
         run: swift test --enable-test-discovery
@@ -52,6 +62,10 @@ jobs:
       - name: Build ConwayCLI
         working-directory: ConwayGameEngine
         run: swift build --product conway-cli
+
+      - name: Check Code Formatting (ConwayGameEngine)
+        working-directory: ConwayGameEngine
+        run: swiftformat . --lint
 
       - name: Test ConwayGameEngine
         working-directory: ConwayGameEngine
@@ -88,6 +102,16 @@ jobs:
       - name: Swift Version
         run: swift --version
 
+      - name: Install SwiftFormat
+        uses: Cyberbeni/install-swift-tool@v3
+        with:
+          url: https://github.com/nicklockwood/SwiftFormat
+          version: '0.57.2'
+
+      - name: Check Code Formatting (ConwayAPI)
+        working-directory: ConwayAPI
+        run: swiftformat . --lint
+
       - name: Test ConwayAPI
         working-directory: ConwayAPI
         run: swift test --enable-test-discovery
@@ -95,6 +119,10 @@ jobs:
       - name: Build ConwayCLI
         working-directory: ConwayGameEngine
         run: swift build --product conway-cli
+
+      - name: Check Code Formatting (ConwayGameEngine)
+        working-directory: ConwayGameEngine
+        run: swiftformat . --lint
 
       - name: Test ConwayGameEngine
         working-directory: ConwayGameEngine

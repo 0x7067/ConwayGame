@@ -1,0 +1,45 @@
+# SwiftFormat Configuration for ConwayGame Project
+
+# Version
+--swiftversion 5.9
+
+# File Options
+--exclude .build,build,DerivedData,vendor,Carthage
+
+# Format Options
+--allman false
+--indent 4
+--maxwidth 120
+--tabwidth 4
+--indentcase false
+--trimwhitespace always
+
+# Rules
+--disable redundantSelf,trailingCommas
+--enable isEmpty,redundantParens,redundantReturn,unusedArguments
+
+# SwiftUI specific
+--funcattributes same-line
+--varattributes same-line
+
+# Import organization
+--importgrouping alphabetized
+
+# Closure formatting  
+--closingparen same-line
+--wraparguments before-first
+--wrapcollections before-first
+
+# Other formatting
+--stripunusedargs closure-only
+--redundanttype inferred
+--self remove
+--semicolons never
+
+# Custom rules for this project
+--ifdef no-indent
+--patternlet hoist
+--ranges no-space
+--shortoptionals always
+--typeattributes preserve
+--wrapternary before-operators

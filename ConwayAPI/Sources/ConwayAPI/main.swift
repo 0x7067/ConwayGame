@@ -1,6 +1,6 @@
+import ConwayGameEngine
 import Foundation
 import Vapor
-import ConwayGameEngine
 
 // MARK: - Application Bootstrap
 

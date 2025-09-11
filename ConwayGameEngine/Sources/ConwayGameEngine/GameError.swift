@@ -10,18 +10,18 @@ public enum GameError: LocalizedError, Equatable, Sendable {
 
     public var errorDescription: String? {
         switch self {
-        case .boardNotFound(let id):
-            return "Board not found: \(id.uuidString)"
-        case .convergenceTimeout(let max):
-            return "Convergence not reached within \(max) iterations."
-        case .generationLimitExceeded(let generations):
-            return "Game didn't reach a final state after \(generations) generations. There are still living cells."
+        case let .boardNotFound(id):
+            "Board not found: \(id.uuidString)"
+        case let .convergenceTimeout(max):
+            "Convergence not reached within \(max) iterations."
+        case let .generationLimitExceeded(generations):
+            "Game didn't reach a final state after \(generations) generations. There are still living cells."
         case .invalidBoardDimensions:
-            return "Invalid board dimensions or non-rectangular cells."
-        case .persistenceError(let message):
-            return "Persistence error: \(message)"
-        case .computationError(let message):
-            return "Computation error: \(message)"
+            "Invalid board dimensions or non-rectangular cells."
+        case let .persistenceError(message):
+            "Persistence error: \(message)"
+        case let .computationError(message):
+            "Computation error: \(message)"
         }
     }
 }

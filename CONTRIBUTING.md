@@ -107,6 +107,7 @@ This project follows a clean, layered architecture designed for maintainability 
 3. **Pull Request process**
    - Create feature branch from `main`
    - Ensure all tests pass
+   - **Run code formatting** before committing (see Code Style section below)
    - Include descriptive PR title and summary
    - Link any related issues
    - Request review from maintainers
@@ -153,6 +154,47 @@ This project follows a clean, layered architecture designed for maintainability 
 - Implement early termination for stable states
 - Run long computations on background queues
 - Use efficient state hashing for cycle detection
+
+**Code Formatting**
+This project uses **SwiftFormat** for automatic code formatting to ensure consistent style across all Swift files.
+
+*Before committing any code*, run the formatting commands:
+
+```bash
+# Install SwiftFormat (if not already installed)
+brew install swiftformat
+
+# Format ConwayGameEngine Swift Package
+cd ConwayGameEngine && swiftformat .
+
+# Format ConwayAPI Swift Package  
+cd ConwayAPI && swiftformat .
+
+# Or format entire project from root
+swiftformat ConwayGameEngine ConwayAPI
+```
+
+*To check formatting without making changes:*
+
+```bash
+# Check ConwayGameEngine formatting
+cd ConwayGameEngine && swiftformat --lint .
+
+# Check ConwayAPI formatting
+cd ConwayAPI && swiftformat --lint .
+
+# Or check entire project from root
+swiftformat ConwayGameEngine ConwayAPI --lint
+```
+
+**Formatting Rules:**
+- 4-space indentation (no tabs)
+- 120-character line length
+- Consistent Swift idioms (remove redundant `self`, organize imports alphabetically)
+- SwiftUI-specific formatting preserved
+- Trailing whitespace removed
+
+**CI Integration:** All pull requests automatically check code formatting. PRs with formatting violations will fail CI checks.
 
 ## Testing
 
