@@ -9,6 +9,7 @@ final class RulesControllerTests: XCTestCase {
     override func setUp() async throws {
         app = try await Application.make(.testing)
         try configure(app)
+        app.logger.logLevel = .warning
     }
     
     override func tearDown() async throws {
