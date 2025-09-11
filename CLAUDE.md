@@ -13,6 +13,7 @@ This project maintains several documentation files with distinct purposes:
 - **CLAUDE.md** (this file): Guidance for Claude Code AI assistant when working with the codebase
 - **CONTRIBUTING.md**: Comprehensive contributor guide for human developers (setup, architecture, workflow)
 - **README.md**: Project overview and quick start instructions for end users
+- **Swift API Documentation**: Comprehensive documentation comments throughout all public APIs following Apple's Swift documentation guidelines
 - **GitHub Templates** (`.github/`): Structured templates for issues and pull requests
   - Bug reports, feature requests, performance issues, documentation, and questions
   - Pull request template with architecture impact assessment and testing checklists
@@ -194,6 +195,7 @@ The codebase follows a layered architecture designed for future extensibility an
 - Configuration system eliminates magic numbers and ensures consistency across platforms
 - Multiple rule variants supported: Conway (default), HighLife, Day and Night
 - CLI supports runtime configuration overrides via command-line options
+- **API Documentation**: All public APIs include comprehensive Swift documentation comments with usage examples, parameter descriptions, and performance notes following Apple's Swift API Design Guidelines
 
 ### Documentation Maintenance
 
@@ -204,5 +206,11 @@ When making changes to the codebase, consider updating documentation:
 - **Testing changes**: Update pull request template checklist and CONTRIBUTING.md testing sections
 - **Build process changes**: Update build commands in both CLAUDE.md and CONTRIBUTING.md
 - **New dependencies**: Update setup instructions in CONTRIBUTING.md
+- **API changes**: Update Swift documentation comments when modifying public APIs, including:
+  - Parameter and return value descriptions
+  - Usage examples for complex methods
+  - Performance notes and complexity information
+  - Error conditions and handling guidance
+  - Maintain consistency with Apple's Swift API Design Guidelines
 
 Refer contributors to CONTRIBUTING.md for comprehensive setup and development workflow guidance.
