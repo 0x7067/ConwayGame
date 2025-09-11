@@ -2,6 +2,8 @@ import XCTest
 import ConwayGameEngine
 @testable import ConwayGame
 import SwiftUI
+import FactoryKit
+import FactoryTesting
 
 @MainActor
 final class GameViewModelTests: XCTestCase {
@@ -17,18 +19,24 @@ final class GameViewModelTests: XCTestCase {
         mockRepository = MockBoardRepository()
         testBoardId = UUID()
         themeManager = ThemeManager()
-        viewModel = GameViewModel(
-            service: mockService,
-            repository: mockRepository,
-            boardId: testBoardId,
-            themeManager: themeManager
-        )
+        
+        // Set up Factory test container with mocks
+        let service = mockService!
+        let repository = mockRepository!
+        let theme = themeManager!
+        
+        Container.shared.gameService.register { service }
+        Container.shared.boardRepository.register { repository }
+        Container.shared.themeManager.register { theme }
+        
+        viewModel = GameViewModel(boardId: testBoardId)
     }
     
     override func tearDown() {
         viewModel = nil
         mockService = nil
         mockRepository = nil
+        Container.shared.reset()
         super.tearDown()
     }
     
@@ -501,17 +509,23 @@ final class BoardListViewModelTests: XCTestCase {
         try await super.setUp()
         mockService = MockGameService()
         mockRepository = MockBoardRepository()
-        viewModel = BoardListViewModel(
-            service: mockService,
-            repository: mockRepository,
-            gameEngineConfiguration: .default
-        )
+        
+        // Set up Factory test container with mocks
+        let service = mockService!
+        let repository = mockRepository!
+        
+        Container.shared.gameService.register { service }
+        Container.shared.boardRepository.register { repository }
+        Container.shared.gameEngineConfiguration.register { .default }
+        
+        viewModel = BoardListViewModel()
     }
     
     override func tearDown() {
         viewModel = nil
         mockService = nil
         mockRepository = nil
+        Container.shared.reset()
         super.tearDown()
     }
     

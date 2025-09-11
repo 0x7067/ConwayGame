@@ -88,8 +88,8 @@ The codebase follows a layered architecture designed for future extensibility an
    - `CoreDataBoardRepository`: Core Data implementation
    - Complete CRUD operations for boards
 
-6. **Dependency Injection** (`Utils/ServiceContainer.swift`)
-   - Singleton container managing all service dependencies and configurations
+6. **Dependency Injection** (`Utils/FactoryContainer.swift`)
+   - FactoryKit-based container managing all service dependencies and configurations
    - Ensures consistent object graph and configuration throughout app
 
 ### Key Design Patterns
@@ -98,7 +98,7 @@ The codebase follows a layered architecture designed for future extensibility an
 - **Repository pattern**: Abstracts persistence layer
 - **MVVM**: ViewModels coordinate between UI and services
 - **Configuration management**: Centralized configuration system eliminates magic numbers
-- **Dependency injection**: Configurations injected consistently across iOS and CLI
+- **Dependency injection**: FactoryKit-based dependency injection ensures consistent configurations across iOS and CLI
 - **Convergence detection**: Uses state hashing and history tracking for cycle/stability detection
 
 ## Testing Structure
@@ -130,7 +130,11 @@ The codebase follows a layered architecture designed for future extensibility an
 - `GameEngine.swift`: Modify game computation algorithms or add optimizations
 - `GameService.swift`: Add new game operations or API endpoints
 - `Board.swift`: Extend data model (ensure validation updates)
-- `ServiceContainer.swift`: Register new dependencies and configurations
+- `FactoryContainer.swift`: Register new dependencies and configurations
+- `ThemeManager.swift`: UI theming and appearance management
+- `ErrorAlertModifier.swift`: Standardized error presentation
+- `LRUCache.swift`: Performance optimization for caching
+- `DesignTokens.swift`: UI design system constants
 - `ConvergenceDetector.swift`: Enhance convergence detection algorithms
 
 ### Documentation Files

@@ -14,7 +14,7 @@ Welcome! This project implements Conway's Game of Life as a production-ready iOS
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd ConwayGame-contributionGuide
+   cd ConwayGame
    ```
 
 2. **Open the iOS project**
@@ -77,7 +77,7 @@ This project follows a clean, layered architecture designed for maintainability 
 - `Repository/`: Data persistence abstraction
 - `ViewModels/`: SwiftUI MVVM coordinators
 - `Views/`: SwiftUI user interface
-- `Utils/`: Shared utilities, dependency injection
+- `Utils/`: Shared utilities, dependency injection (`FactoryContainer`), theming (`ThemeManager`), error handling (`ErrorAlertModifier`), caching (`LRUCache`), design tokens (`DesignTokens`)
 
 ### Design Patterns
 
@@ -85,7 +85,7 @@ This project follows a clean, layered architecture designed for maintainability 
 - **Repository pattern**: Abstracts data persistence
 - **MVVM**: ViewModels coordinate between UI and services
 - **Configuration management**: Centralized system eliminates magic numbers across platforms
-- **Dependency Injection**: `ServiceContainer` manages object graph and configurations
+- **Dependency Injection**: `FactoryContainer` manages object graph and configurations using FactoryKit
 - **Async/await**: Modern concurrency throughout
 
 ## Development Workflow

@@ -124,11 +124,11 @@ public final class DefaultGameService: GameService {
                     let population = state.population
                     let gs = GameState(
                         boardId: board.id,
-                        generation: generation + 1,
+                        generation: generation,
                         cells: state,
                         isStable: true,
                         populationCount: population,
-                        convergedAt: generation + 1,
+                        convergedAt: generation,
                         convergenceType: convergence
                     )
                     return .success(gs)
