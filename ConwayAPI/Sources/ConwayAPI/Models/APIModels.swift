@@ -1,6 +1,6 @@
+import ConwayGameEngine
 import Foundation
 import Vapor
-import ConwayGameEngine
 
 // MARK: - Health Response
 
@@ -25,7 +25,7 @@ struct APIInfoResponse: Content {
 struct GameStepRequest: Content {
     let grid: [[Bool]]
     let rules: String?
-    
+
     init(grid: [[Bool]], rules: String? = nil) {
         self.grid = grid
         self.rules = rules
@@ -44,7 +44,7 @@ struct GameSimulationRequest: Content {
     let generations: Int
     let rules: String?
     let includeHistory: Bool?
-    
+
     init(grid: [[Bool]], generations: Int, rules: String? = nil, includeHistory: Bool? = nil) {
         self.grid = grid
         self.generations = generations
@@ -131,7 +131,7 @@ struct ErrorResponse: Content {
     let error: String
     let message: String
     let timestamp: Date
-    
+
     init(error: String, message: String) {
         self.error = error
         self.message = message
@@ -143,16 +143,18 @@ struct ErrorResponse: Content {
 
 extension [[Bool]] {
     var gridWidth: Int? {
-        return isEmpty ? nil : self[0].count
+        isEmpty ? nil : self[0].count
     }
-    
+
     var gridHeight: Int {
-        return count
+        count
     }
-    
+
     var isValidGrid: Bool {
         guard let firstWidth = self.first?.count, firstWidth > 0 else { return false }
-        for row in self { if row.count != firstWidth { return false } }
+        for row in self {
+            if row.count != firstWidth { return false }
+        }
         return true
     }
 }
@@ -161,11 +163,11 @@ extension ConvergenceType {
     var responseType: String {
         switch self {
         case .continuing:
-            return "continuing"
+            "continuing"
         case .extinct:
-            return "extinct"
+            "extinct"
         case .cyclical:
-            return "cyclical"
+            "cyclical"
         }
     }
 }

@@ -13,26 +13,20 @@ let package = Package(
     products: [
         .library(
             name: "ConwayGameEngine",
-            targets: ["ConwayGameEngine"]
-        ),
+            targets: ["ConwayGameEngine"]),
         .executable(
             name: "conway-cli",
-            targets: ["ConwayCLI"]
-        ),
+            targets: ["ConwayCLI"]),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "ConwayGameEngine",
-            dependencies: []
-        ),
+            dependencies: []),
         .executableTarget(
             name: "ConwayCLI",
-            dependencies: ["ConwayGameEngine"]
-        ),
+            dependencies: ["ConwayGameEngine"]),
         .testTarget(
             name: "ConwayGameEngineTests",
-            dependencies: ["ConwayGameEngine"]
-        ),
-    ]
-)
+            dependencies: ["ConwayGameEngine"]),
+    ])

@@ -19,9 +19,10 @@ public final class DefaultConvergenceDetector: ConvergenceDetector {
         return .continuing
     }
 
-    @inline(__always)
-    private func isExtinct(_ state: CellsGrid) -> Bool {
-        for row in state { if row.contains(true) { return false } }
+    @inline(__always) private func isExtinct(_ state: CellsGrid) -> Bool {
+        for row in state {
+            if row.contains(true) { return false }
+        }
         return true
     }
 }

@@ -6,7 +6,7 @@ struct APIErrorMiddleware: AsyncMiddleware {
         // Generate correlation ID for this request
         let correlationId = UUID().uuidString.lowercased()
         request.storage[CorrelationIDKey.self] = correlationId
-        
+
         do {
             let response = try await next.respond(to: request)
             // Add correlation ID to successful responses
@@ -19,66 +19,62 @@ struct APIErrorMiddleware: AsyncMiddleware {
             return errorResponse
         }
     }
-    
+
     private func handleError(_ error: Error, for request: Request) async throws -> Response {
         let status: HTTPResponseStatus
         let errorResponse: ErrorResponse
-        
+
         switch error {
         case let abort as AbortError:
             status = abort.status
             errorResponse = ErrorResponse(
                 error: abort.status.reasonPhrase,
-                message: abort.reason
-            )
-            
+                message: abort.reason)
+
         case let decodingError as DecodingError:
             status = .badRequest
             errorResponse = ErrorResponse(
                 error: "DecodingError",
-                message: decodingErrorMessage(decodingError)
-            )
-            
+                message: decodingErrorMessage(decodingError))
+
         case let validationError as GridValidationError:
             status = .badRequest
             errorResponse = ErrorResponse(
                 error: "ValidationError",
-                message: validationError.localizedDescription
-            )
-            
+                message: validationError.localizedDescription)
+
         default:
             status = .internalServerError
             errorResponse = ErrorResponse(
                 error: "InternalServerError",
-                message: "An unexpected error occurred"
-            )
-            
+                message: "An unexpected error occurred")
+
             // Log the actual error for debugging with correlation ID
             let correlationId = request.storage[CorrelationIDKey.self] ?? "unknown"
             request.logger.error("Unhandled error [correlation-id: \(correlationId)]: \(error)")
         }
-        
+
         let response = Response(status: status)
         try response.content.encode(errorResponse)
         response.headers.contentType = .json
-        
+
         return response
     }
-    
+
     private func decodingErrorMessage(_ error: DecodingError) -> String {
         switch error {
-        case .typeMismatch(let type, let context):
+        case let .typeMismatch(type, context):
             return "Type mismatch for \(type) at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
-            
-        case .valueNotFound(let type, let context):
+
+        case let .valueNotFound(type, context):
             return "Missing required field: \(context.codingPath.map(\.stringValue).joined(separator: ".")) of type \(type)"
-            
-        case .keyNotFound(let key, let context):
+
+        case let .keyNotFound(key, context):
             return "Missing required field: \(key.stringValue)"
-            
-        case .dataCorrupted(let context):
+
+        case let .dataCorrupted(context):
             return "Invalid data at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)"
-            
+
         @unknown default:
             return "Invalid request data format"
         }
@@ -91,9 +87,9 @@ struct CorrelationIDKey: StorageKey {
     typealias Value = String
 }
 
-extension Request {
-    public var correlationID: String {
-        return storage[CorrelationIDKey.self] ?? "unknown"
+public extension Request {
+    var correlationID: String {
+        storage[CorrelationIDKey.self] ?? "unknown"
     }
 }
 
@@ -107,13 +103,13 @@ struct SimpleCORSMiddleware: AsyncMiddleware {
             addCORSHeaders(to: response)
             return response
         }
-        
+
         let response = try await next.respond(to: request)
         addCORSHeaders(to: response)
-        
+
         return response
     }
-    
+
     private func addCORSHeaders(to response: Response) {
         response.headers.replaceOrAdd(name: .accessControlAllowOrigin, value: "*")
         response.headers.replaceOrAdd(name: .accessControlAllowMethods, value: "GET, POST, OPTIONS")
@@ -127,12 +123,12 @@ struct SimpleCORSMiddleware: AsyncMiddleware {
 struct JSONContentTypeMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         let response = try await next.respond(to: request)
-        
+
         // Ensure JSON responses have correct content type
         if response.headers.contentType == nil {
             response.headers.contentType = .json
         }
-        
+
         return response
     }
 }

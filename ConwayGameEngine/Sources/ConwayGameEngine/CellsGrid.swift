@@ -7,14 +7,14 @@ public extension CellsGrid {
     var population: Int {
         reduce(0) { $0 + $1.reduce(0) { $0 + ($1 ? 1 : 0) } }
     }
-    
+
     /// Create an empty grid with specified dimensions
     static func empty(width: Int, height: Int) -> CellsGrid {
-        return (0..<height).map { _ in 
-            return (0..<width).map { _ in false }
+        (0..<height).map { _ in
+            (0..<width).map { _ in false }
         }
     }
-    
+
     /// Create a grid from a string representation (useful for patterns)
     static func from(string: String, alive: Character = "*", dead: Character = ".") -> CellsGrid {
         let lines = string.components(separatedBy: .newlines).filter { !$0.isEmpty }
@@ -22,7 +22,7 @@ public extension CellsGrid {
             line.map { $0 == alive }
         }
     }
-    
+
     /// Convert grid to string representation for display
     func toString(alive: Character = "*", dead: Character = ".") -> String {
         map { row in

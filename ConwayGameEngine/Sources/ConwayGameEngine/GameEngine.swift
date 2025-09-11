@@ -5,20 +5,22 @@ public protocol GameEngine {
     func computeStateAtGeneration(_ initialState: CellsGrid, generation: Int) -> CellsGrid
 }
 
-public struct GameRules {
-    @inline(__always)
-    public static func shouldCellLive(isAlive: Bool, neighborCount: Int, configuration: GameEngineConfiguration = .default) -> Bool {
+public enum GameRules {
+    @inline(__always) public static func shouldCellLive(
+        isAlive: Bool,
+        neighborCount: Int,
+        configuration: GameEngineConfiguration = .default) -> Bool
+    {
         if isAlive {
             // Cell survives if neighbor count is in survival set
-            return configuration.survivalNeighborCounts.contains(neighborCount)
+            configuration.survivalNeighborCounts.contains(neighborCount)
         } else {
             // Cell is born if neighbor count is in birth set
-            return configuration.birthNeighborCounts.contains(neighborCount)
+            configuration.birthNeighborCounts.contains(neighborCount)
         }
     }
 
-    @inline(__always)
-    public static func countNeighbors(_ grid: CellsGrid, x: Int, y: Int) -> Int {
+    @inline(__always) public static func countNeighbors(_ grid: CellsGrid, x: Int, y: Int) -> Int {
         // Interpret parameters as (row, col) to match tests (x=row, y=col)
         // Conway's Game of Life uses Moore neighborhood (8 directions)
         let offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
@@ -28,7 +30,7 @@ public struct GameRules {
         for (dr, dc) in offsets {
             let nr = x + dr // x is row index
             let nc = y + dc // y is column index
-            if nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] {
+            if nr >= 0, nr < rows, nc >= 0, nc < cols, grid[nr][nc] {
                 count += 1
             }
         }
@@ -38,7 +40,7 @@ public struct GameRules {
 
 public final class ConwayGameEngine: GameEngine {
     private let configuration: GameEngineConfiguration
-    
+
     public init(configuration: GameEngineConfiguration = .default) {
         self.configuration = configuration
     }

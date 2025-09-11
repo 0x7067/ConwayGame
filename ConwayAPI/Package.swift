@@ -10,8 +10,7 @@ let package = Package(
     products: [
         .executable(
             name: "conway-api",
-            targets: ["ConwayAPI"]
-        ),
+            targets: ["ConwayAPI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.89.0"),
@@ -23,14 +22,11 @@ let package = Package(
             dependencies: [
                 "ConwayGameEngine",
                 .product(name: "Vapor", package: "vapor"),
-            ]
-        ),
+            ]),
         .testTarget(
             name: "ConwayAPITests",
             dependencies: [
                 "ConwayAPI",
                 .product(name: "XCTVapor", package: "vapor"),
-            ]
-        ),
-    ]
-)
+            ]),
+    ])

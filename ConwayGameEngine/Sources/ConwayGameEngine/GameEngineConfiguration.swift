@@ -3,19 +3,18 @@ import Foundation
 public struct DisplayFrequency: Equatable, Codable {
     public let initialGenerations: Int
     public let subsequentInterval: Int
-    
+
     public init(initialGenerations: Int, subsequentInterval: Int) {
         self.initialGenerations = initialGenerations
         self.subsequentInterval = subsequentInterval
     }
-    
+
     public static let `default` = DisplayFrequency(
         initialGenerations: 10,
-        subsequentInterval: 5
-    )
-    
+        subsequentInterval: 5)
+
     public func shouldDisplay(generation: Int) -> Bool {
-        return generation <= initialGenerations || generation % subsequentInterval == 0
+        generation <= initialGenerations || generation % subsequentInterval == 0
     }
 }
 
@@ -28,7 +27,7 @@ public struct GameEngineConfiguration: Equatable, Codable {
     public let maxPatternGenerations: Int
     public let displayFrequency: DisplayFrequency
     public let paginationPageSize: Int
-    
+
     public init(
         survivalNeighborCounts: Set<Int> = [2, 3],
         birthNeighborCounts: Set<Int> = [3],
@@ -37,8 +36,8 @@ public struct GameEngineConfiguration: Equatable, Codable {
         defaultRandomDensity: Double = 0.25,
         maxPatternGenerations: Int = 50,
         displayFrequency: DisplayFrequency = .default,
-        paginationPageSize: Int = 20
-    ) {
+        paginationPageSize: Int = 20)
+    {
         self.survivalNeighborCounts = survivalNeighborCounts
         self.birthNeighborCounts = birthNeighborCounts
         self.defaultBoardWidth = defaultBoardWidth
@@ -48,21 +47,18 @@ public struct GameEngineConfiguration: Equatable, Codable {
         self.displayFrequency = displayFrequency
         self.paginationPageSize = paginationPageSize
     }
-    
+
     public static let `default` = GameEngineConfiguration()
-    
+
     public static let classicConway = GameEngineConfiguration(
         survivalNeighborCounts: [2, 3],
-        birthNeighborCounts: [3]
-    )
-    
+        birthNeighborCounts: [3])
+
     public static let highLife = GameEngineConfiguration(
         survivalNeighborCounts: [2, 3],
-        birthNeighborCounts: [3, 6]
-    )
-    
+        birthNeighborCounts: [3, 6])
+
     public static let dayAndNight = GameEngineConfiguration(
         survivalNeighborCounts: [3, 4, 6, 7, 8],
-        birthNeighborCounts: [3, 6, 7, 8]
-    )
+        birthNeighborCounts: [3, 6, 7, 8])
 }
