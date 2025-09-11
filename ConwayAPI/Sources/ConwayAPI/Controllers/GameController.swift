@@ -15,9 +15,10 @@ struct GameController: RouteCollection {
     
     func step(req: Request) async throws -> GameStepResponse {
         let request = try req.content.decode(GameStepRequest.self)
+        let apiConfig = req.apiConfiguration
         
         // Validate grid
-        try validateGrid(request.grid)
+        try validateGrid(request.grid, config: apiConfig)
         
         // Get rule configuration
         let config = try getGameConfiguration(for: request.rules ?? "conway")
@@ -39,16 +40,17 @@ struct GameController: RouteCollection {
     
     func simulate(req: Request) async throws -> GameSimulationResponse {
         let request = try req.content.decode(GameSimulationRequest.self)
+        let apiConfig = req.apiConfiguration
         
         // Validate grid
-        try validateGrid(request.grid)
+        try validateGrid(request.grid, config: apiConfig)
         
         // Validate generations limit
         if request.generations <= 0 {
             throw Abort(.badRequest, reason: "Generations must be greater than 0")
         }
-        if request.generations > 1000 {
-            throw Abort(.badRequest, reason: "Maximum 1000 generations allowed")
+        if request.generations > apiConfig.maxGenerations {
+            throw Abort(.badRequest, reason: "Maximum \(apiConfig.maxGenerations) generations allowed")
         }
         
         // Get rule configuration
@@ -140,9 +142,10 @@ struct GameController: RouteCollection {
     
     func validate(req: Request) async throws -> ValidationResponse {
         let request = try req.content.decode(GameValidationRequest.self)
+        let apiConfig = req.apiConfiguration
         
         do {
-            try validateGrid(request.grid)
+            try validateGrid(request.grid, config: apiConfig)
             
             return ValidationResponse(
                 isValid: true,
@@ -172,7 +175,7 @@ struct GameController: RouteCollection {
     
     // MARK: - Helper Methods
     
-    private func validateGrid(_ grid: [[Bool]]) throws {
+    private func validateGrid(_ grid: [[Bool]], config: APIConfiguration) throws {
         if grid.isEmpty {
             throw GridValidationError.emptyGrid
         }
@@ -192,15 +195,13 @@ struct GameController: RouteCollection {
             }
         }
 
-        // Enforce reasonable caps to protect server resources
-        let maxWidth = 200
-        let maxHeight = 200
-        if firstRowWidth > maxWidth || grid.count > maxHeight {
+        // Enforce configurable caps to protect server resources
+        if firstRowWidth > config.maxGridWidth || grid.count > config.maxGridHeight {
             throw GridValidationError.gridTooLarge(
                 width: firstRowWidth,
                 height: grid.count,
-                maxWidth: maxWidth,
-                maxHeight: maxHeight
+                maxWidth: config.maxGridWidth,
+                maxHeight: config.maxGridHeight
             )
         }
     }
