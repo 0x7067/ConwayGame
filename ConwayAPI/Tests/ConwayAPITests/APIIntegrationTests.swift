@@ -435,8 +435,10 @@ final class APIIntegrationTests: XCTestCase {
     }
 
     func testComplexGridPatterns() async throws {
-        \n // Skip this test in CI to prevent hangs\n        if isCI {\n            throw XCTSkip(\"Skipping complex
-        // grid patterns test in CI environment\")\n        }
+        // Skip this test in CI to prevent hangs
+        if isCI {
+            throw XCTSkip("Skipping complex grid patterns test in CI environment")
+        }
         // Test API with complex, real-world patterns
         let complexPatterns = [
             // Spacefiller pattern (grows indefinitely)
@@ -620,8 +622,10 @@ final class APIIntegrationTests: XCTestCase {
     }
 
     func testWebSocketLikeStreaming() async throws {
-        \n // Skip this test in CI to prevent hangs from Task.sleep\n        if isCI {\n            throw
-        // XCTSkip(\"Skipping streaming test in CI environment\")\n        }
+        // Skip this test in CI to prevent hangs from Task.sleep
+        if isCI {
+            throw XCTSkip("Skipping streaming test in CI environment")
+        }
         // Test streaming-like behavior by making sequential requests to simulate real-time updates
         let gliderPattern: PatternResponse = try await app.decode(.GET, "api/patterns/glider", expecting: .ok)
         var currentGrid = gliderPattern.grid
