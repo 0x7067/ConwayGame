@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */ = {isa = PBXBuildFile; productRef = EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */; };
+		EB809C7A2E6F2053001C4BEC /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = EB809C792E6F2053001C4BEC /* FactoryKit */; };
+		EB809C7C2E6F2054001C4BEC /* FactoryTesting in Frameworks */ = {isa = PBXBuildFile; productRef = EB809C7B2E6F2054001C4BEC /* FactoryTesting */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +59,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */,
+				EB809C7A2E6F2053001C4BEC /* FactoryKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB809C7C2E6F2054001C4BEC /* FactoryTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +122,7 @@
 			name = ConwayGame;
 			packageProductDependencies = (
 				EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */,
+				EB809C792E6F2053001C4BEC /* FactoryKit */,
 			);
 			productName = ConwayGame;
 			productReference = EB809C222E6DE86800294052 /* ConwayGame.app */;
@@ -141,6 +146,7 @@
 			);
 			name = ConwayGameTests;
 			packageProductDependencies = (
+				EB809C7B2E6F2054001C4BEC /* FactoryTesting */,
 			);
 			productName = ConwayGameTests;
 			productReference = EB809C342E6DE86900294052 /* ConwayGameTests.xctest */;
@@ -203,6 +209,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				EBFEB2F12E6F2052001C4BEC /* XCLocalSwiftPackageReference "ConwayGameEngine" */,
+				EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EB809C232E6DE86800294052 /* Products */;
@@ -575,10 +582,31 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ConwayGameEngine;
+		};
+		EB809C792E6F2053001C4BEC /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = FactoryKit;
+		};
+		EB809C7B2E6F2054001C4BEC /* FactoryTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = FactoryTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

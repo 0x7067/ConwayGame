@@ -1,5 +1,6 @@
 import SwiftUI
 import ConwayGameEngine
+import FactoryKit
 
 struct CopyBoardData {
     let name: String
@@ -16,8 +17,8 @@ struct CreateBoardView: View {
     @State private var errorMessage: String?
     // Navigation to PatternPicker is handled by NavigationLink (no sheet)
 
-    let gameService: GameService
-    let repository: BoardRepository
+    @Injected(\.gameService) private var gameService: GameService
+    @Injected(\.boardRepository) private var repository: BoardRepository
     var copyFromBoard: CopyBoardData? = nil
     var onCreated: ((UUID) -> Void)? = nil
 

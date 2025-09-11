@@ -1,5 +1,6 @@
 import Foundation
 import ConwayGameEngine
+import FactoryKit
 
 @MainActor
 final class GameViewModel: ObservableObject {
@@ -11,21 +12,18 @@ final class GameViewModel: ObservableObject {
     @Published var boardName: String = ""
     @Published var showGenerationLimitAlert: Bool = false
 
-    private let service: GameService
-    private let repository: BoardRepository
+    @Injected(\.gameService) private var service: GameService
+    @Injected(\.boardRepository) private var repository: BoardRepository
     private let boardId: UUID
-    private let themeManager: ThemeManager
+    @Injected(\.themeManager) private var themeManager: ThemeManager
     private var playTask: Task<Void, Never>?
     private var stepsThisRun: Int = 0
     
     // Configurable for testing, defaults to production value
     var maxAutoStepsPerRun: Int = UIConstants.maxAutoStepsPerRun
 
-    init(service: GameService, repository: BoardRepository, boardId: UUID, themeManager: ThemeManager) {
-        self.service = service
-        self.repository = repository
+    init(boardId: UUID) {
         self.boardId = boardId
-        self.themeManager = themeManager
         self.playSpeed = themeManager.defaultPlaySpeed
     }
 

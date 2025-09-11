@@ -1,5 +1,6 @@
 import SwiftUI
 import ConwayGameEngine
+import FactoryKit
 
 struct GameBoardView: View {
     @StateObject private var vm: GameViewModel
@@ -8,14 +9,11 @@ struct GameBoardView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var themeManager: ThemeManager
     @Binding var navigationPath: NavigationPath
+    @Injected(\.gameService) private var gameService: GameService
+    @Injected(\.boardRepository) private var repository: BoardRepository
 
-    let gameService: GameService
-    let repository: BoardRepository
-
-    init(gameService: GameService, repository: BoardRepository, boardId: UUID, navigationPath: Binding<NavigationPath>, themeManager: ThemeManager) {
-        self.gameService = gameService
-        self.repository = repository
-        _vm = StateObject(wrappedValue: GameViewModel(service: gameService, repository: repository, boardId: boardId, themeManager: themeManager))
+    init(boardId: UUID, navigationPath: Binding<NavigationPath>, themeManager: ThemeManager) {
+        _vm = StateObject(wrappedValue: GameViewModel(boardId: boardId))
         _navigationPath = navigationPath
     }
     
@@ -101,8 +99,6 @@ struct GameBoardView: View {
             if let state = vm.state {
                 NavigationView {
                     CreateBoardView(
-                        gameService: gameService,
-                        repository: repository,
                         copyFromBoard: CopyBoardData(
                             name: vm.boardName,
                             cells: state.cells
@@ -161,8 +157,6 @@ private struct BoardGrid: View {
     @Previewable @State var path = NavigationPath()
     return NavigationStack(path: $path) {
         GameBoardView(
-            gameService: ServiceContainer.shared.gameService, 
-            repository: ServiceContainer.shared.boardRepository, 
             boardId: UUID(),
             navigationPath: $path,
             themeManager: ThemeManager()

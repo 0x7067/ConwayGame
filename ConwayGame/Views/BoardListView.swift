@@ -1,8 +1,9 @@
 import SwiftUI
 import ConwayGameEngine
+import FactoryKit
 
 struct BoardListView: View {
-    @StateObject private var vm: BoardListViewModel
+    @StateObject private var vm = BoardListViewModel()
     @State private var createdId: UUID?
     @State private var navigateToCreated: Bool = false
     @State private var renamingBoard: Board?
@@ -10,9 +11,9 @@ struct BoardListView: View {
     @State private var showingCreate: Bool = false
     @EnvironmentObject private var themeManager: ThemeManager
     @Binding var navigationPath: NavigationPath
+    @Injected(\.boardRepository) private var boardRepository: BoardRepository
 
-    init(gameService: GameService, repository: BoardRepository, gameEngineConfiguration: GameEngineConfiguration, navigationPath: Binding<NavigationPath>) {
-        _vm = StateObject(wrappedValue: BoardListViewModel(service: gameService, repository: repository, gameEngineConfiguration: gameEngineConfiguration))
+    init(navigationPath: Binding<NavigationPath>) {
         _navigationPath = navigationPath
     }
 
@@ -58,8 +59,6 @@ struct BoardListView: View {
         .navigationTitle("Boards")
         .navigationDestination(for: UUID.self) { boardId in
             GameBoardView(
-                gameService: ServiceContainer.shared.gameService,
-                repository: ServiceContainer.shared.boardRepository,
                 boardId: boardId,
                 navigationPath: $navigationPath,
                 themeManager: themeManager
@@ -74,7 +73,7 @@ struct BoardListView: View {
         }
         .task { await vm.load() }
         .fullScreenCover(isPresented: $showingCreate) {
-            CreateBoardRoot(gameService: ServiceContainer.shared.gameService, repository: ServiceContainer.shared.boardRepository, onCreated: { id in
+            CreateBoardRoot(onCreated: { id in
                 createdId = id
                 navigateToCreated = true
                 Task { await vm.load() }
@@ -95,7 +94,7 @@ struct BoardListView: View {
                             let nameTrimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
                             guard !nameTrimmed.isEmpty else { renamingBoard = nil; return }
                             Task {
-                                try? await ServiceContainer.shared.boardRepository.rename(id: b.id, newName: nameTrimmed)
+                                try? await boardRepository.rename(id: b.id, newName: nameTrimmed)
                                 renamingBoard = nil
                                 await vm.load()
                             }
@@ -110,11 +109,6 @@ struct BoardListView: View {
 #Preview {
     @Previewable @State var path = NavigationPath()
     NavigationStack(path: $path) {
-        BoardListView(
-            gameService: ServiceContainer.shared.gameService, 
-            repository: ServiceContainer.shared.boardRepository,
-            gameEngineConfiguration: ServiceContainer.shared.gameEngineConfiguration,
-            navigationPath: $path
-        )
+        BoardListView(navigationPath: $path)
     }
 }

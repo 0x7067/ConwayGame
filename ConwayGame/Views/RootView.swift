@@ -1,18 +1,14 @@
 import SwiftUI
+import FactoryKit
 
 struct RootView: View {
     @State private var boardsNavigationPath = NavigationPath()
-    @StateObject private var themeManager = ServiceContainer.shared.themeManager
+    @StateObject private var themeManager = Container.shared.themeManager()
     
     var body: some View {
         TabView {
             NavigationStack(path: $boardsNavigationPath) {
-                BoardListView(
-                    gameService: ServiceContainer.shared.gameService, 
-                    repository: ServiceContainer.shared.boardRepository,
-                    gameEngineConfiguration: ServiceContainer.shared.gameEngineConfiguration,
-                    navigationPath: $boardsNavigationPath
-                )
+                BoardListView(navigationPath: $boardsNavigationPath)
             }
             .tabItem { Label("Boards", systemImage: "square.grid.3x3.fill") }
             .tag(0)

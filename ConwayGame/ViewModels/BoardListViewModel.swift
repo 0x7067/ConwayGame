@@ -1,18 +1,13 @@
 import Foundation
 import ConwayGameEngine
+import FactoryKit
 
 @MainActor
 final class BoardListViewModel: ObservableObject {
     @Published var boards: [Board] = []
-    private let service: GameService
-    private let repository: BoardRepository
-    private let gameEngineConfiguration: GameEngineConfiguration
-
-    init(service: GameService, repository: BoardRepository, gameEngineConfiguration: GameEngineConfiguration = .default) {
-        self.service = service
-        self.repository = repository
-        self.gameEngineConfiguration = gameEngineConfiguration
-    }
+    @Injected(\.gameService) private var service: GameService
+    @Injected(\.boardRepository) private var repository: BoardRepository
+    @Injected(\.gameEngineConfiguration) private var gameEngineConfiguration: GameEngineConfiguration
 
     func load() async {
         do {

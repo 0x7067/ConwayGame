@@ -3,7 +3,7 @@ import CoreData
 import OSLog
 import ConwayGameEngine
 
-final class CoreDataBoardRepository: BoardRepository {
+final class CoreDataBoardRepository: BoardRepository, @unchecked Sendable {
     private let container: NSPersistentContainer
 
     init(container: NSPersistentContainer = PersistenceController.shared.container) {
