@@ -19,7 +19,7 @@ final class PatternsControllerTests: XCTestCase {
     // MARK: - List Patterns Tests
     
     func testListPatterns() async throws {
-        let response: PatternListResponse = try await app.decode(.GET, "api/patterns")
+        let response: PatternListResponse = try await app.decode(.GET, "api/patterns", expecting: .ok, json: true)
         XCTAssertFalse(response.patterns.isEmpty)
         
         // Check that known patterns are included
@@ -42,7 +42,7 @@ final class PatternsControllerTests: XCTestCase {
     // MARK: - Get Specific Pattern Tests
     
     func testGetGliderPattern() async throws {
-        let response: PatternResponse = try await app.decode(.GET, "api/patterns/glider")
+        let response: PatternResponse = try await app.decode(.GET, "api/patterns/glider", expecting: .ok, json: true)
         XCTAssertEqual(response.name, "glider")
         XCTAssertEqual(response.displayName, "Glider")
         XCTAssertEqual(response.category, "Spaceship")
@@ -59,7 +59,7 @@ final class PatternsControllerTests: XCTestCase {
     }
     
     func testGetBlinkerPattern() async throws {
-        let blink: PatternResponse = try await app.decode(.GET, "api/patterns/blinker")
+        let blink: PatternResponse = try await app.decode(.GET, "api/patterns/blinker", expecting: .ok, json: true)
         XCTAssertEqual(blink.name, "blinker")
         XCTAssertEqual(blink.displayName, "Blinker")
         XCTAssertEqual(blink.category, "Oscillator")
@@ -69,7 +69,7 @@ final class PatternsControllerTests: XCTestCase {
     }
     
     func testGetBlockPattern() async throws {
-        let block: PatternResponse = try await app.decode(.GET, "api/patterns/block")
+        let block: PatternResponse = try await app.decode(.GET, "api/patterns/block", expecting: .ok, json: true)
         XCTAssertEqual(block.name, "block")
         XCTAssertEqual(block.displayName, "Block")
         XCTAssertEqual(block.category, "Still Life")
@@ -78,7 +78,7 @@ final class PatternsControllerTests: XCTestCase {
     }
     
     func testGetPulsarPattern() async throws {
-        let pulsar: PatternResponse = try await app.decode(.GET, "api/patterns/pulsar")
+        let pulsar: PatternResponse = try await app.decode(.GET, "api/patterns/pulsar", expecting: .ok, json: true)
         XCTAssertEqual(pulsar.name, "pulsar")
         XCTAssertEqual(pulsar.displayName, "Pulsar")
         XCTAssertEqual(pulsar.category, "Oscillator")
@@ -87,7 +87,7 @@ final class PatternsControllerTests: XCTestCase {
     }
     
     func testGetGosperGunPattern() async throws {
-        let gun: PatternResponse = try await app.decode(.GET, "api/patterns/gospergun")
+        let gun: PatternResponse = try await app.decode(.GET, "api/patterns/gospergun", expecting: .ok, json: true)
         XCTAssertEqual(gun.name, "gospergun")
         XCTAssertEqual(gun.displayName, "Gosper Glider Gun")
         XCTAssertEqual(gun.category, "Gun")
@@ -103,17 +103,17 @@ final class PatternsControllerTests: XCTestCase {
     }
     
     func testGetPatternCaseInsensitive() async throws {
-        let upper: PatternResponse = try await app.decode(.GET, "api/patterns/GLIDER")
+        let upper: PatternResponse = try await app.decode(.GET, "api/patterns/GLIDER", expecting: .ok, json: true)
         XCTAssertEqual(upper.name, "glider")
     }
     
     // MARK: - Grid Validation
     
     func testAllPatternsHaveValidGrids() async throws {
-        let listResponse: PatternListResponse = try await app.decode(.GET, "api/patterns")
+        let listResponse: PatternListResponse = try await app.decode(.GET, "api/patterns", expecting: .ok, json: true)
         
         for patternInfo in listResponse.patterns {
-            let pattern: PatternResponse = try await app.decode(.GET, "api/patterns/\(patternInfo.name)")
+            let pattern: PatternResponse = try await app.decode(.GET, "api/patterns/\(patternInfo.name)", expecting: .ok, json: true)
             // Verify grid is valid
             XCTAssertTrue(pattern.grid.isValidGrid, "Pattern \(pattern.name) has invalid grid")
             // Verify dimensions match

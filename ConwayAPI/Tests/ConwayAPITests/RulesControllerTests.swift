@@ -19,7 +19,7 @@ final class RulesControllerTests: XCTestCase {
     // MARK: - List Rules Tests
     
     func testListRules() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         XCTAssertFalse(response.rules.isEmpty)
         
         // Check that known rules are included
@@ -49,7 +49,7 @@ final class RulesControllerTests: XCTestCase {
     // MARK: - Specific Rule Validation Tests
     
     func testConwayRulesPresent() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         
         guard let conwayRule = response.rules.first(where: { $0.name == "conway" }) else {
             XCTFail("Conway rules not found")
@@ -63,7 +63,7 @@ final class RulesControllerTests: XCTestCase {
     }
     
     func testHighLifeRulesPresent() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         
         guard let highLifeRule = response.rules.first(where: { $0.name == "highlife" }) else {
             XCTFail("HighLife rules not found")
@@ -77,7 +77,7 @@ final class RulesControllerTests: XCTestCase {
     }
     
     func testDayAndNightRulesPresent() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         
         guard let dayNightRule = response.rules.first(where: { $0.name == "daynight" }) else {
             XCTFail("Day & Night rules not found")
@@ -93,7 +93,7 @@ final class RulesControllerTests: XCTestCase {
     // MARK: - Rule Consistency Tests
     
     func testRulesArrayIsSorted() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         
         for rule in response.rules {
             // Neighbor counts should be sorted
@@ -103,7 +103,7 @@ final class RulesControllerTests: XCTestCase {
     }
     
     func testRulesHaveUniqueNames() async throws {
-        let response: RulesListResponse = try await app.decode(.GET, "api/rules")
+        let response: RulesListResponse = try await app.decode(.GET, "api/rules", expecting: .ok, json: true)
         
         let names = response.rules.map { $0.name }
         let uniqueNames = Set(names)
