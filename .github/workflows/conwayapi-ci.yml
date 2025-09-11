@@ -42,6 +42,7 @@ jobs:
           path: |
             ~/.swiftpm
             ConwayAPI/.build
+            ConwayGameEngine/.build
           key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
           restore-keys: |
             ${{ runner.os }}-spm-
@@ -51,6 +52,14 @@ jobs:
 
       - name: Test ConwayAPI
         working-directory: ConwayAPI
+        run: swift test --enable-test-discovery
+
+      - name: Build ConwayCLI
+        working-directory: ConwayGameEngine
+        run: swift build --product conway-cli
+
+      - name: Test ConwayGameEngine
+        working-directory: ConwayGameEngine
         run: swift test --enable-test-discovery
 
   macos:
@@ -76,6 +85,7 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ConwayAPI/.build
+            ConwayGameEngine/.build
           key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
           restore-keys: |
             ${{ runner.os }}-spm-
@@ -85,4 +95,12 @@ jobs:
 
       - name: Test ConwayAPI
         working-directory: ConwayAPI
+        run: swift test --enable-test-discovery
+
+      - name: Build ConwayCLI
+        working-directory: ConwayGameEngine
+        run: swift build --product conway-cli
+
+      - name: Test ConwayGameEngine
+        working-directory: ConwayGameEngine
         run: swift test --enable-test-discovery
