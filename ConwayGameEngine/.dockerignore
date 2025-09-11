@@ -1,0 +1,31 @@
+# Build artifacts
+.build/
+*.xcodeproj
+*.xcworkspace
+
+# Documentation
+*.md
+!API_README.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test artifacts
+.coverage
+*.profraw
+
+# Temporary files
+*.tmp
+*.swp
+*~

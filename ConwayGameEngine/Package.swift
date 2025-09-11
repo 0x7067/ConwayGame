@@ -19,8 +19,14 @@ let package = Package(
             name: "conway-cli",
             targets: ["ConwayCLI"]
         ),
+        .executable(
+            name: "conway-api",
+            targets: ["ConwayAPI"]
+        ),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.89.0"),
+    ],
     targets: [
         .target(
             name: "ConwayGameEngine",
@@ -30,9 +36,23 @@ let package = Package(
             name: "ConwayCLI",
             dependencies: ["ConwayGameEngine"]
         ),
+        .executableTarget(
+            name: "ConwayAPI",
+            dependencies: [
+                "ConwayGameEngine",
+                .product(name: "Vapor", package: "vapor"),
+            ]
+        ),
         .testTarget(
             name: "ConwayGameEngineTests",
             dependencies: ["ConwayGameEngine"]
+        ),
+        .testTarget(
+            name: "ConwayAPITests",
+            dependencies: [
+                "ConwayAPI",
+                .product(name: "XCTVapor", package: "vapor"),
+            ]
         ),
     ]
 )
