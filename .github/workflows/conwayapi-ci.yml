@@ -57,7 +57,7 @@ jobs:
 
       - name: Test ConwayAPI
         working-directory: ConwayAPI
-        run: swift test --parallel
+        run: swift test
 
       - name: Build ConwayCLI
         working-directory: ConwayGameEngine
@@ -69,7 +69,7 @@ jobs:
 
       - name: Test ConwayGameEngine
         working-directory: ConwayGameEngine
-        run: swift test --parallel
+        run: swift test
 
   macos:
     name: macOS (Swift ${{ matrix.swift }})
@@ -114,7 +114,7 @@ jobs:
 
       - name: Test ConwayAPI
         working-directory: ConwayAPI
-        run: swift test --parallel
+        run: swift test
 
       - name: Build ConwayCLI
         working-directory: ConwayGameEngine
@@ -126,4 +126,4 @@ jobs:
 
       - name: Test ConwayGameEngine
         working-directory: ConwayGameEngine
-        run: swift test --parallel
+        run: swift test
