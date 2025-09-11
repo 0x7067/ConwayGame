@@ -111,6 +111,27 @@ This project follows a clean, layered architecture designed for maintainability 
    - Link any related issues
    - Request review from maintainers
 
+### Testing & Toolchains
+
+- Swift toolchains supported: 5.10 and 6.0 (CI matrix). Code is compatible with Swift 6 language mode.
+- Run tests locally:
+  ```bash
+  # API
+  cd ConwayAPI && swift test
+  
+  # Engine + CLI build
+  cd ConwayGameEngine && swift test && swift build --product conway-cli
+  ```
+  The API test suite uses async XCTVapor helpers. Prefer `await app.test(..., afterResponse:)` and the helpers in `ConwayAPI/Tests/ConwayAPITests/TestHelpers.swift`.
+
+### PR Checklist
+
+- [ ] Tests pass locally (API and Engine)
+- [ ] CI green (Linux + macOS, Swift 5.10 + 6.0)
+- [ ] API docs updated (routes, limits, configuration)
+- [ ] README(s) updated if behavior or entrypoints changed
+- [ ] Consider security and limits (CORS, grid sizes, generation caps)
+
 ### Code Standards
 
 **Swift Style**

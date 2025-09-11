@@ -30,8 +30,13 @@ docker run -p 8080:8080 conway-api
 Or use Docker Compose:
 
 ```bash
-docker-compose up
+cd ConwayAPI
+docker compose up
 ```
+
+Notes:
+- Compose builds with context at the repo root to include the local engine dependency (see Dockerfile).
+- The runtime image includes `curl` for health checks.
 
 ## API Documentation
 
@@ -193,6 +198,26 @@ Error responses include details:
 - **Memory Usage**: Scales with grid size and history inclusion
 - **Concurrency**: Fully async/await based for high throughput
 
+## Configuration
+
+- Environment variables:
+  - `PORT`: Port to listen on (default 8080)
+  - `ENVIRONMENT`: Vapor environment (`production`, `testing`, etc.)
+- JSON dates use ISO 8601 for consistency.
+- CORS: permissive by default via `SimpleCORSMiddleware` (allows `*`). Consider tightening for production.
+
+## Limits & Behavior
+
+- Generations: `/api/game/simulate` is capped at 1000 generations.
+- Grid shape: grids must be rectangular and non-empty; validation returns `width`, `height`, and errors.
+- Grid size caps: requests exceeding 200x200 are rejected with a clear error to protect resources.
+- Rule presets: `conway`, `highlife`, `daynight` (alias `day-night`, `dayandnight`).
+
+## Toolchains
+
+- Developed and tested with Swift 5.9+.
+- CI runs on Swift 5.10 and 6.0 (Linux + macOS).
+
 ## Development
 
 ### Testing
@@ -207,10 +232,7 @@ swift test
 swift build -c release
 ```
 
-### Environment Variables
-
-- `PORT`: Server port (default: 8080)
-- `ENVIRONMENT`: Environment (development/production)
+<!-- Environment variables are documented above in Configuration -->
 
 ## Architecture
 
