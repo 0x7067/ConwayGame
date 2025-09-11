@@ -165,6 +165,9 @@ swift test
 - `ConvergenceDetectorTests.swift`: Convergence detection algorithms
 - `BoardRepositoryTests.swift`: Persistence layer tests
 - `ViewModelTests.swift`: UI logic tests
+- `PaginationViewModelTests.swift`: Pagination behavior and sorting tests
+- `PerformanceBenchmarkTests.swift`: Core Data scaling and performance benchmarks
+- `SyntheticDataGenerator.swift`: Test data generation utility for large dataset testing
 - `ConwayGameEngineTests/`: Swift Package unit tests
 
 ### Writing Tests
@@ -185,6 +188,8 @@ swift test
 - Measure computation times for large grids
 - Verify memory usage patterns
 - Test convergence detection efficiency
+- Core Data pagination scaling with large datasets (using `SyntheticDataGenerator`)
+- Repository performance benchmarks for thousands of boards
 
 ## Building & Validation
 

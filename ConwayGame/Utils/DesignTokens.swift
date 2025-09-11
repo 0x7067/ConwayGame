@@ -147,4 +147,11 @@ public enum DesignTokens {
         /// Maximum board dimension for UI performance
         public static let maxBoardSize: Int = 50
     }
+    
+    // MARK: - Pagination
+    public enum Pagination {
+        /// Number of items from the end of the list to trigger loading more content
+        /// This provides smooth infinite scroll by loading before reaching the bottom
+        public static let lookaheadTrigger: Int = 5
+    }
 }

@@ -11,6 +11,19 @@
         <attribute name="cellsData" optional="NO" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <attribute name="initialCellsData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <attribute name="stateHistoryData" optional="NO" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <fetchIndex name="byCreatedAt">
+            <fetchIndexElement property="createdAt" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byName">
+            <fetchIndexElement property="name" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byGeneration">
+            <fetchIndexElement property="currentGeneration" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byCreatedAtAndName">
+            <fetchIndexElement property="createdAt" type="Binary" order="descending"/>
+            <fetchIndexElement property="name" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <elements>
         <element name="BoardEntity" positionX="-63" positionY="-18" width="128" height="180"/>

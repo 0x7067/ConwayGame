@@ -6,52 +6,110 @@ import ConwayGameEngine
 
 final class MockBoardRepository: BoardRepository {
     private var storage: [UUID: Board] = [:]
-    var saveCallCount = 0
-    var loadCallCount = 0
-    var loadAllCallCount = 0
-    var deleteCallCount = 0
-    var renameCallCount = 0
-    var resetCallCount = 0
     var shouldThrowError = false
     var errorToThrow: GameError = .computationError("Mock error")
     
     func save(_ board: Board) async throws {
-        saveCallCount += 1
-        if shouldThrowError {
-            throw errorToThrow
-        }
+        if shouldThrowError { throw errorToThrow }
         storage[board.id] = board
     }
     
     func load(id: UUID) async throws -> Board? {
-        loadCallCount += 1
-        if shouldThrowError {
-            throw errorToThrow
-        }
+        if shouldThrowError { throw errorToThrow }
         return storage[id]
     }
     
     func loadAll() async throws -> [Board] {
-        loadAllCallCount += 1
-        if shouldThrowError {
-            throw errorToThrow
-        }
+        if shouldThrowError { throw errorToThrow }
         return Array(storage.values)
     }
     
-    func delete(id: UUID) async throws {
-        deleteCallCount += 1
+    func loadBoardsPaginated(offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
+        if shouldThrowError { throw errorToThrow }
+        
+        // Input validation
+        guard offset >= 0, limit > 0 else {
+            throw GameError.computationError("Invalid pagination parameters: offset=\(offset), limit=\(limit)")
+        }
+        
+        let allBoards = Array(storage.values)
+        let sortedBoards = sortBoards(allBoards, by: sortBy)
+        let totalCount = sortedBoards.count
+        let startIndex = min(offset, totalCount)
+        let endIndex = min(offset + limit, totalCount)
+        let pageBoards = startIndex < totalCount ? Array(sortedBoards[startIndex..<endIndex]) : []
+        let hasMorePages = endIndex < totalCount
+        let currentPage = limit > 0 ? offset / limit : 0
+        
+        return BoardListPage(
+            boards: pageBoards,
+            totalCount: totalCount,
+            hasMorePages: hasMorePages,
+            currentPage: currentPage,
+            pageSize: limit
+        )
+    }
+    
+    func searchBoards(query: String, offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
+        if shouldThrowError { throw errorToThrow }
+        
+        // Input validation
+        guard offset >= 0, limit > 0 else {
+            throw GameError.computationError("Invalid pagination parameters: offset=\(offset), limit=\(limit)")
+        }
+        
+        let allBoards = Array(storage.values)
+        let filteredBoards = query.isEmpty ? allBoards : allBoards.filter { board in
+            board.name.localizedCaseInsensitiveContains(query)
+        }
+        let sortedBoards = sortBoards(filteredBoards, by: sortBy)
+        let totalCount = sortedBoards.count
+        let startIndex = min(offset, totalCount)
+        let endIndex = min(offset + limit, totalCount)
+        let pageBoards = startIndex < totalCount ? Array(sortedBoards[startIndex..<endIndex]) : []
+        let hasMorePages = endIndex < totalCount
+        let currentPage = limit > 0 ? offset / limit : 0
+        
+        return BoardListPage(
+            boards: pageBoards,
+            totalCount: totalCount,
+            hasMorePages: hasMorePages,
+            currentPage: currentPage,
+            pageSize: limit
+        )
+    }
+    
+    func getTotalBoardCount() async throws -> Int {
         if shouldThrowError {
             throw errorToThrow
         }
+        return storage.count
+    }
+    
+    private func sortBoards(_ boards: [Board], by sortOption: BoardSortOption) -> [Board] {
+        switch sortOption {
+        case .createdAtDescending:
+            return boards.sorted { $0.createdAt > $1.createdAt }
+        case .createdAtAscending:
+            return boards.sorted { $0.createdAt < $1.createdAt }
+        case .nameAscending:
+            return boards.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .nameDescending:
+            return boards.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+        case .generationDescending:
+            return boards.sorted { $0.currentGeneration > $1.currentGeneration }
+        case .generationAscending:
+            return boards.sorted { $0.currentGeneration < $1.currentGeneration }
+        }
+    }
+    
+    func delete(id: UUID) async throws {
+        if shouldThrowError { throw errorToThrow }
         storage.removeValue(forKey: id)
     }
     
     func rename(id: UUID, newName: String) async throws {
-        renameCallCount += 1
-        if shouldThrowError {
-            throw errorToThrow
-        }
+        if shouldThrowError { throw errorToThrow }
         guard var board = storage[id] else {
             throw GameError.boardNotFound(id)
         }
@@ -60,7 +118,6 @@ final class MockBoardRepository: BoardRepository {
     }
     
     func reset(id: UUID) async throws -> Board {
-        resetCallCount += 1
         if shouldThrowError {
             throw errorToThrow
         }
@@ -77,12 +134,6 @@ final class MockBoardRepository: BoardRepository {
     // Test helpers
     func clear() {
         storage.removeAll()
-        saveCallCount = 0
-        loadCallCount = 0
-        loadAllCallCount = 0
-        deleteCallCount = 0
-        renameCallCount = 0
-        resetCallCount = 0
         shouldThrowError = false
     }
     
@@ -174,6 +225,154 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
         XCTAssertTrue(ids.contains(board1.id))
         XCTAssertTrue(ids.contains(board2.id))
         XCTAssertTrue(ids.contains(board3.id))
+    }
+    
+    // MARK: - Pagination Tests
+    
+    func testLoadBoardsPaginatedEmptyRepositoryReturnsEmptyPage() async throws {
+        let page = try await repository.loadBoardsPaginated(offset: 0, limit: 10, sortBy: .createdAtDescending)
+        
+        XCTAssertEqual(page.boards.count, 0)
+        XCTAssertEqual(page.totalCount, 0)
+        XCTAssertFalse(page.hasMorePages)
+        XCTAssertEqual(page.currentPage, 0)
+        XCTAssertEqual(page.pageSize, 10)
+    }
+    
+    func testLoadBoardsPaginatedFirstPageReturnsCorrectResults() async throws {
+        // Create 15 boards with different creation dates
+        let boards = try await createTestBoards(count: 15)
+        
+        let page = try await repository.loadBoardsPaginated(offset: 0, limit: 10, sortBy: .createdAtDescending)
+        
+        XCTAssertEqual(page.boards.count, 10)
+        XCTAssertEqual(page.totalCount, 15)
+        XCTAssertTrue(page.hasMorePages)
+        XCTAssertEqual(page.currentPage, 0)
+        XCTAssertEqual(page.pageSize, 10)
+        
+        // Verify boards are sorted by creation date descending
+        for i in 1..<page.boards.count {
+            XCTAssertGreaterThanOrEqual(page.boards[i-1].createdAt, page.boards[i].createdAt)
+        }
+    }
+    
+    func testLoadBoardsPaginatedSecondPageReturnsRemainingResults() async throws {
+        let boards = try await createTestBoards(count: 15)
+        
+        let page = try await repository.loadBoardsPaginated(offset: 10, limit: 10, sortBy: .createdAtDescending)
+        
+        XCTAssertEqual(page.boards.count, 5)
+        XCTAssertEqual(page.totalCount, 15)
+        XCTAssertFalse(page.hasMorePages)
+        XCTAssertEqual(page.currentPage, 1)
+        XCTAssertEqual(page.pageSize, 10)
+    }
+    
+    func testLoadBoardsPaginatedOffsetBeyondTotalReturnsEmptyPage() async throws {
+        let boards = try await createTestBoards(count: 5)
+        
+        let page = try await repository.loadBoardsPaginated(offset: 10, limit: 10, sortBy: .createdAtDescending)
+        
+        XCTAssertEqual(page.boards.count, 0)
+        XCTAssertEqual(page.totalCount, 5)
+        XCTAssertFalse(page.hasMorePages)
+        XCTAssertEqual(page.currentPage, 1)
+        XCTAssertEqual(page.pageSize, 10)
+    }
+    
+    func test_loadBoardsPaginated_sortByName_sortsCorrectly() async throws {
+        let board1 = try createTestBoard(name: "Alpha Board")
+        let board2 = try createTestBoard(name: "Charlie Board")
+        let board3 = try createTestBoard(name: "Beta Board")
+        
+        try await repository.save(board1)
+        try await repository.save(board2)
+        try await repository.save(board3)
+        
+        let pageAsc = try await repository.loadBoardsPaginated(offset: 0, limit: 10, sortBy: .nameAscending)
+        XCTAssertEqual(pageAsc.boards[0].name, "Alpha Board")
+        XCTAssertEqual(pageAsc.boards[1].name, "Beta Board")
+        XCTAssertEqual(pageAsc.boards[2].name, "Charlie Board")
+        
+        let pageDesc = try await repository.loadBoardsPaginated(offset: 0, limit: 10, sortBy: .nameDescending)
+        XCTAssertEqual(pageDesc.boards[0].name, "Charlie Board")
+        XCTAssertEqual(pageDesc.boards[1].name, "Beta Board")
+        XCTAssertEqual(pageDesc.boards[2].name, "Alpha Board")
+    }
+    
+    func test_searchBoards_emptyQuery_returnsAllBoards() async throws {
+        let boards = try await createTestBoards(count: 5)
+        
+        let page = try await repository.searchBoards(query: "", offset: 0, limit: 10, sortBy: .createdAtDescending)
+        
+        XCTAssertEqual(page.boards.count, 5)
+        XCTAssertEqual(page.totalCount, 5)
+        XCTAssertFalse(page.hasMorePages)
+    }
+    
+    func test_searchBoards_withQuery_filtersCorrectly() async throws {
+        let board1 = try createTestBoard(name: "Game Board")
+        let board2 = try createTestBoard(name: "Test Board")
+        let board3 = try createTestBoard(name: "Another Game")
+        
+        try await repository.save(board1)
+        try await repository.save(board2)
+        try await repository.save(board3)
+        
+        let page = try await repository.searchBoards(query: "Game", offset: 0, limit: 10, sortBy: .nameAscending)
+        
+        XCTAssertEqual(page.boards.count, 2)
+        XCTAssertEqual(page.totalCount, 2)
+        XCTAssertFalse(page.hasMorePages)
+        
+        let boardNames = page.boards.map(\.name).sorted()
+        XCTAssertEqual(boardNames, ["Another Game", "Game Board"])
+    }
+    
+    func test_searchBoards_caseInsensitive_filtersCorrectly() async throws {
+        let board1 = try createTestBoard(name: "UPPER CASE")
+        let board2 = try createTestBoard(name: "lower case")
+        let board3 = try createTestBoard(name: "Mixed Case")
+        
+        try await repository.save(board1)
+        try await repository.save(board2)
+        try await repository.save(board3)
+        
+        let page = try await repository.searchBoards(query: "case", offset: 0, limit: 10, sortBy: .nameAscending)
+        
+        XCTAssertEqual(page.boards.count, 3)
+        XCTAssertEqual(page.totalCount, 3)
+    }
+    
+    func testSearchBoardsWithPaginationWorksCorrectly() async throws {
+        // Create boards with names that will match search
+        for i in 0..<15 {
+            let board = try createTestBoard(name: "Test Board \(i)")
+            try await repository.save(board)
+        }
+        
+        let firstPage = try await repository.searchBoards(query: "Test", offset: 0, limit: 10, sortBy: .nameAscending)
+        XCTAssertEqual(firstPage.boards.count, 10)
+        XCTAssertEqual(firstPage.totalCount, 15)
+        XCTAssertTrue(firstPage.hasMorePages)
+        
+        let secondPage = try await repository.searchBoards(query: "Test", offset: 10, limit: 10, sortBy: .nameAscending)
+        XCTAssertEqual(secondPage.boards.count, 5)
+        XCTAssertEqual(secondPage.totalCount, 15)
+        XCTAssertFalse(secondPage.hasMorePages)
+    }
+    
+    func test_getTotalBoardCount_emptyRepository_returnsZero() async throws {
+        let count = try await repository.getTotalBoardCount()
+        XCTAssertEqual(count, 0)
+    }
+    
+    func test_getTotalBoardCount_withBoards_returnsCorrectCount() async throws {
+        let boards = try await createTestBoards(count: 7)
+        
+        let count = try await repository.getTotalBoardCount()
+        XCTAssertEqual(count, 7)
     }
     
     // MARK: - Delete Tests
@@ -343,6 +542,28 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
             height: height,
             cells: cells
         )
+    }
+    
+    private func createTestBoards(count: Int) async throws -> [Board] {
+        var boards: [Board] = []
+        for i in 0..<count {
+            // Create boards with different creation dates by adding milliseconds
+            let createdAt = Date().addingTimeInterval(TimeInterval(i) * 0.001)
+            let board = try Board(
+                name: "Test Board \(i)",
+                width: 3,
+                height: 3,
+                createdAt: createdAt,
+                cells: [
+                    [true,  false, true],
+                    [false, true,  false],
+                    [true,  false, true]
+                ]
+            )
+            try await repository.save(board)
+            boards.append(board)
+        }
+        return boards
     }
 }
 

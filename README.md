@@ -1,7 +1,7 @@
 # Conway's Game of Life
 
 A Swift implementation of Conway's Game of Life with:
-- An iOS app (SwiftUI) under `ConwayGame`
+- An iOS app (SwiftUI) under `ConwayGame` with Core Data pagination for large datasets
 - A reusable engine as a Swift Package under `ConwayGameEngine`
 - A CLI executable target `conway-cli` for terminal simulations
 
@@ -71,12 +71,17 @@ Use `--rules=<name>` in CLI or configure programmatically in the iOS app.
 
 ## Development
 - Engine tests: `cd ConwayGameEngine && swift test`
+- iOS app tests: `xcodebuild -scheme ConwayGame -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test`
 - Build CLI only: `cd ConwayGameEngine && swift build`
 - Run CLI: `cd ConwayGameEngine && swift run conway-cli ...`
 
 Engine entry points:
 - `ConwayGameEngine.computeNextState(_:)` — next generation.
 - `ConwayGameEngine.computeStateAtGeneration(_:generation:)` — advance multiple generations.
+
+Performance & Scalability:
+- Core Data pagination handles large board collections efficiently
+- Comprehensive performance benchmarks validate scaling characteristics
 
 ---
 If you want, I can add a `Makefile` with common tasks or expand the README with screenshots and advanced usage.

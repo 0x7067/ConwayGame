@@ -620,7 +620,8 @@ final class BoardListViewModelTests: XCTestCase {
         await viewModel.load()
         
         XCTAssertEqual(viewModel.boards.count, 3)
-        XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
+        XCTAssertEqual(mockRepository.loadAllCallCount, 0) // Should not call deprecated method
     }
     
     func test_load_failure_clearsBoardsAndSetsError() async {
@@ -682,6 +683,7 @@ final class BoardListViewModelTests: XCTestCase {
         
         XCTAssertEqual(mockRepository.deleteCallCount, 1)
         XCTAssertEqual(viewModel.gameError, .persistenceError("Failed to delete board"))
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 2) // Once for initial load, once after delete
     }
     
     // MARK: - CreateRandomBoard Tests
@@ -690,7 +692,7 @@ final class BoardListViewModelTests: XCTestCase {
         await viewModel.createRandomBoard(name: "Random Board", width: 10, height: 10, density: 0.3)
         
         XCTAssertEqual(mockService.createBoardCallCount, 1)
-        XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
     }
     
     func test_createRandomBoard_withCustomName_renamesBoard() async {
@@ -699,7 +701,7 @@ final class BoardListViewModelTests: XCTestCase {
         
         XCTAssertEqual(mockService.createBoardCallCount, 1)
         XCTAssertEqual(mockRepository.renameCallCount, 1) // Should try to rename
-        XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
     }
     
     func test_createRandomBoard_defaultParameters() async {
@@ -707,20 +709,20 @@ final class BoardListViewModelTests: XCTestCase {
         
         XCTAssertEqual(mockService.createBoardCallCount, 1)
         // With default name "Board", might not rename depending on UUID
-        XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
     }
     
     // MARK: - Recovery Action Tests
     
     func test_handleRecoveryAction_retry_reloadsBoards() async {
-        let initialLoadCount = mockRepository.loadAllCallCount
+        let initialLoadCount = mockRepository.loadBoardsPaginatedCallCount
         
         viewModel.handleRecoveryAction(.retry)
         
         // Give async operation time to complete
         try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
         
-        XCTAssertEqual(mockRepository.loadAllCallCount, initialLoadCount + 1)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, initialLoadCount + 1)
     }
     
     func test_handleRecoveryAction_otherActions_doNothing() {
@@ -749,7 +751,13 @@ final class BoardListViewModelTests: XCTestCase {
             mockRepository.preloadBoard(board)
         }
         
-        await viewModel.load()
+        // Load first page
+        await viewModel.loadFirstPage()
+        
+        // Load all remaining pages to get all 1000 boards
+        while viewModel.hasMorePages {
+            await viewModel.loadNextPage()
+        }
         
         XCTAssertEqual(viewModel.boards.count, 1000)
     }
@@ -803,6 +811,152 @@ final class BoardListViewModelTests: XCTestCase {
             createdAt: createdAt,
             cells: cells
         )
+    }
+    
+    // MARK: - Pagination Tests
+    
+    func test_loadFirstPage_success_loadsPaginatedResults() async {
+        // Create more than one page of boards
+        let boards = (0..<25).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        await viewModel.loadFirstPage()
+        
+        // Should load first 20 boards (default page size)
+        XCTAssertEqual(viewModel.boards.count, 20)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
+        XCTAssertTrue(viewModel.hasMorePages)
+        XCTAssertEqual(viewModel.totalCount, 25)
+    }
+    
+    func test_loadNextPage_success_appendsResults() async {
+        // Create more than one page of boards
+        let boards = (0..<25).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        // Load first page
+        await viewModel.loadFirstPage()
+        XCTAssertEqual(viewModel.boards.count, 20)
+        
+        // Load next page
+        await viewModel.loadNextPage()
+        XCTAssertEqual(viewModel.boards.count, 25) // Should have all 25 now
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 2)
+        XCTAssertFalse(viewModel.hasMorePages)
+    }
+    
+    func test_loadNextPage_whenNoMorePages_doesNotLoad() async {
+        let boards = (0..<15).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        await viewModel.loadFirstPage()
+        XCTAssertFalse(viewModel.hasMorePages) // Only 15 boards, fits in one page
+        
+        // Try to load next page - should not make additional call
+        await viewModel.loadNextPage()
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1) // Still only one call
+    }
+    
+    func test_search_success_filtersAndPaginates() async {
+        // Create boards with different names
+        let gameBoards = (0..<15).map { createTestBoard(name: "Game Board \($0)") }
+        let testBoards = (0..<10).map { createTestBoard(name: "Test Board \($0)") }
+        
+        for board in gameBoards + testBoards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        await viewModel.search(query: "Game")
+        
+        XCTAssertEqual(mockRepository.searchBoardsCallCount, 1)
+        XCTAssertEqual(viewModel.boards.count, 15) // All Game boards should match
+        XCTAssertEqual(viewModel.searchQuery, "Game")
+    }
+    
+    func test_changeSortOption_success_reloadsWithNewSort() async {
+        let boards = (0..<5).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        await viewModel.loadFirstPage()
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 1)
+        
+        await viewModel.changeSortOption(.nameAscending)
+        
+        XCTAssertEqual(viewModel.sortOption, .nameAscending)
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 2) // Should reload with new sort
+    }
+    
+    func test_refresh_success_reloadsFirstPage() async {
+        let boards = (0..<25).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        // Load multiple pages
+        await viewModel.loadFirstPage()
+        await viewModel.loadNextPage()
+        XCTAssertEqual(viewModel.boards.count, 25)
+        
+        // Refresh should reset to first page
+        await viewModel.refresh()
+        XCTAssertEqual(viewModel.boards.count, 20) // Back to first page
+        XCTAssertEqual(mockRepository.loadBoardsPaginatedCallCount, 3) // Initial + next + refresh
+    }
+    
+    func test_shouldLoadMoreContent_returnsCorrectValue() async {
+        let boards = (0..<25).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        await viewModel.loadFirstPage()
+        let firstPageBoards = viewModel.boards
+        
+        // Should load more if we're near the end of current results and have more pages
+        XCTAssertTrue(viewModel.hasMorePages)
+        let nearEndBoard = firstPageBoards[firstPageBoards.count - 3] // 3 from end
+        XCTAssertTrue(viewModel.shouldLoadMoreContent(for: nearEndBoard))
+        
+        // Should not load more if we're at the beginning
+        let firstBoard = firstPageBoards[0]
+        XCTAssertFalse(viewModel.shouldLoadMoreContent(for: firstBoard))
+    }
+    
+    func test_paginationState_correctlyUpdated() async {
+        let boards = (0..<25).map { createTestBoard(name: "Board \($0)") }
+        for board in boards {
+            mockRepository.preloadBoard(board)
+        }
+        
+        // Initial state
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.isLoadingMore)
+        XCTAssertFalse(viewModel.hasMorePages)
+        XCTAssertEqual(viewModel.totalCount, 0)
+        
+        await viewModel.loadFirstPage()
+        
+        // After first page load
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.isLoadingMore)
+        XCTAssertTrue(viewModel.hasMorePages)
+        XCTAssertEqual(viewModel.totalCount, 25)
+        
+        await viewModel.loadNextPage()
+        
+        // After loading all pages
+        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.isLoadingMore)
+        XCTAssertFalse(viewModel.hasMorePages)
+        XCTAssertEqual(viewModel.totalCount, 25)
     }
 }
 

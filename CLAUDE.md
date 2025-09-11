@@ -116,6 +116,9 @@ The codebase follows a layered architecture designed for future extensibility an
 - `BoardRepositoryTests.swift`: Persistence layer tests
 - `ViewModelTests.swift`: UI logic tests and error handling integration  
 - `UserFriendlyErrorTests.swift`: Error transformation, recovery actions, and context-aware behavior
+- `PaginationViewModelTests.swift`: Pagination behavior and sorting tests
+- `PerformanceBenchmarkTests.swift`: Core Data scaling and performance tests
+- `SyntheticDataGenerator.swift`: Test data generation utility for performance testing
 
 ## Performance Considerations
 
@@ -124,6 +127,8 @@ The codebase follows a layered architecture designed for future extensibility an
 - **Early termination**: Computation stops when stable states are detected
 - **Background processing**: Long computations run on background queues
 - **State hashing**: Efficient bit-packed base64 encoding for cycle detection
+- **Core Data pagination**: Efficient pagination with configurable page sizes to handle large datasets
+- **Performance testing**: Comprehensive benchmark suite for Core Data scaling with `SyntheticDataGenerator`
 
 ## Core Data Integration
 
@@ -138,6 +143,10 @@ The codebase follows a layered architecture designed for future extensibility an
 - `GameEngine.swift`: Modify game computation algorithms or add optimizations
 - `GameService.swift`: Add new game operations or API endpoints
 - `Board.swift`: Extend data model (ensure validation updates)
+- `BoardSortOption.swift`: Add new sorting options for board lists and pagination
+- `BoardRepository.swift`: Add new repository methods for data access patterns
+- `CoreDataBoardRepository.swift`: Implement new Core Data queries and pagination logic
+- `BoardListViewModel.swift`: Extend pagination and filtering capabilities
 - `FactoryContainer.swift`: Register new dependencies and configurations
 - `ThemeManager.swift`: UI theming and appearance management
 - `UserFriendlyError.swift`: Extend error transformation system for new error types or contexts
@@ -145,6 +154,7 @@ The codebase follows a layered architecture designed for future extensibility an
 - `LRUCache.swift`: Performance optimization for caching
 - `DesignTokens.swift`: UI design system constants
 - `ConvergenceDetector.swift`: Enhance convergence detection algorithms
+- `SyntheticDataGenerator.swift`: Extend test data generation for performance testing
 
 ### Documentation Files
 - `CONTRIBUTING.md`: Update when architecture changes or new development processes are added
