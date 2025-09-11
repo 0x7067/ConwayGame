@@ -1,4 +1,5 @@
 import SwiftUI
+import ConwayGameEngine
 
 struct SettingsView: View {
     @EnvironmentObject private var themeManager: ThemeManager

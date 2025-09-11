@@ -503,7 +503,8 @@ final class BoardListViewModelTests: XCTestCase {
         mockRepository = MockBoardRepository()
         viewModel = BoardListViewModel(
             service: mockService,
-            repository: mockRepository
+            repository: mockRepository,
+            gameEngineConfiguration: .default
         )
     }
     

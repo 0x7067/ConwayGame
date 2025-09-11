@@ -10,6 +10,7 @@ struct RootView: View {
                 BoardListView(
                     gameService: ServiceContainer.shared.gameService, 
                     repository: ServiceContainer.shared.boardRepository,
+                    gameEngineConfiguration: ServiceContainer.shared.gameEngineConfiguration,
                     navigationPath: $boardsNavigationPath
                 )
             }

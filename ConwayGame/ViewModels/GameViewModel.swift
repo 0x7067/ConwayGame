@@ -131,7 +131,7 @@ final class GameViewModel: ObservableObject {
                     break
                 }
                 // Use the selected play speed interval
-                try? await Task.sleep(nanoseconds: self.playSpeed.interval)
+                try? await Task.sleep(nanoseconds: self.themeManager.interval(for: self.playSpeed))
             }
         }
     }
