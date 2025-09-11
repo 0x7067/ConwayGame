@@ -142,16 +142,18 @@ struct ErrorResponse: Content {
 // MARK: - Extensions
 
 extension [[Bool]] {
-    var population: Int {
-        return self.flatMap { $0 }.filter { $0 }.count
-    }
-    
     var gridWidth: Int? {
         return isEmpty ? nil : self[0].count
     }
     
     var gridHeight: Int {
         return count
+    }
+    
+    var isValidGrid: Bool {
+        guard let firstWidth = self.first?.count, firstWidth > 0 else { return false }
+        for row in self { if row.count != firstWidth { return false } }
+        return true
     }
 }
 

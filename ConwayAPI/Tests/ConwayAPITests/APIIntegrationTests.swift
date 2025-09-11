@@ -7,26 +7,25 @@ final class APIIntegrationTests: XCTestCase {
     var app: Application!
     
     override func setUp() async throws {
-        app = Application(.testing)
+        app = try await Application.make(.testing)
         try configure(app)
     }
     
     override func tearDown() async throws {
-        app.shutdown()
+        try await app.asyncShutdown()
     }
     
     // MARK: - Health and Info Endpoints
     
     func testHealthEndpoint() async throws {
-        try app.test(.GET, "health", afterResponse: { res in
+        struct HealthResponse: Codable {
+            let status: String
+            let timestamp: Date
+            let version: String
+        }
+        try await app.test(.GET, "health", afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
             XCTAssertEqual(res.headers.contentType, .json)
-            
-            struct HealthResponse: Codable {
-                let status: String
-                let timestamp: Date
-                let version: String
-            }
             let response = try res.content.decode(HealthResponse.self)
             XCTAssertEqual(response.status, "healthy")
             XCTAssertEqual(response.version, "1.0.0")
@@ -34,22 +33,17 @@ final class APIIntegrationTests: XCTestCase {
     }
     
     func testAPIInfoEndpoint() async throws {
-        try app.test(.GET, "api", afterResponse: { res in
-            XCTAssertEqual(res.status, .ok)
-            XCTAssertEqual(res.headers.contentType, .json)
-            
-            struct APIInfoResponse: Codable {
-                let name: String
-                let version: String
-                let description: String
-                let endpoints: [String: String]
-                let documentation: String
-            }
-            let response = try res.content.decode(APIInfoResponse.self)
-            XCTAssertEqual(response.name, "Conway's Game of Life API")
-            XCTAssertEqual(response.version, "1.0.0")
-            XCTAssertFalse(response.endpoints.isEmpty)
-        })
+        struct APIInfoResponse: Codable {
+            let name: String
+            let version: String
+            let description: String
+            let endpoints: [String: String]
+            let documentation: String
+        }
+        let info: APIInfoResponse = try await app.decode(.GET, "api")
+        XCTAssertEqual(info.name, "Conway's Game of Life API")
+        XCTAssertEqual(info.version, "1.0.0")
+        XCTAssertFalse(info.endpoints.isEmpty)
     }
     
     // MARK: - End-to-End Workflow Tests
@@ -57,8 +51,7 @@ final class APIIntegrationTests: XCTestCase {
     func testCompleteGliderWorkflow() async throws {
         // 1. Get glider pattern
         var gliderGrid: [[Bool]]!
-        
-        try app.test(.GET, "api/patterns/glider", afterResponse: { res in
+        try await app.test(.GET, "api/patterns/glider", afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
             let pattern = try res.content.decode(PatternResponse.self)
             gliderGrid = pattern.grid
@@ -67,7 +60,7 @@ final class APIIntegrationTests: XCTestCase {
         // 2. Validate the pattern
         let validationRequest = GameValidationRequest(grid: gliderGrid)
         
-        try app.test(.POST, "api/game/validate", beforeRequest: { req in
+        try await app.test(.POST, "api/game/validate", beforeRequest: { req in
             try req.content.encode(validationRequest)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -79,7 +72,7 @@ final class APIIntegrationTests: XCTestCase {
         // 3. Run a single step
         let stepRequest = GameStepRequest(grid: gliderGrid, rules: "conway")
         
-        try app.test(.POST, "api/game/step", beforeRequest: { req in
+        try await app.test(.POST, "api/game/step", beforeRequest: { req in
             try req.content.encode(stepRequest)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -96,7 +89,7 @@ final class APIIntegrationTests: XCTestCase {
             includeHistory: true
         )
         
-        try app.test(.POST, "api/game/simulate", beforeRequest: { req in
+        try await app.test(.POST, "api/game/simulate", beforeRequest: { req in
             try req.content.encode(simulationRequest)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -110,8 +103,7 @@ final class APIIntegrationTests: XCTestCase {
     func testOscillatorDetection() async throws {
         // Test with blinker pattern (2-cycle oscillator)
         var blinkerGrid: [[Bool]]!
-        
-        try app.test(.GET, "api/patterns/blinker", afterResponse: { res in
+        try await app.test(.GET, "api/patterns/blinker", afterResponse: { res in
             let pattern = try res.content.decode(PatternResponse.self)
             blinkerGrid = pattern.grid
         })
@@ -123,7 +115,7 @@ final class APIIntegrationTests: XCTestCase {
             includeHistory: false
         )
         
-        try app.test(.POST, "api/game/simulate", beforeRequest: { req in
+        try await app.test(.POST, "api/game/simulate", beforeRequest: { req in
             try req.content.encode(simulationRequest)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -138,8 +130,7 @@ final class APIIntegrationTests: XCTestCase {
     func testStillLifeDetection() async throws {
         // Test with block pattern (still life)
         var blockGrid: [[Bool]]!
-        
-        try app.test(.GET, "api/patterns/block", afterResponse: { res in
+        try await app.test(.GET, "api/patterns/block", afterResponse: { res in
             let pattern = try res.content.decode(PatternResponse.self)
             blockGrid = pattern.grid
         })
@@ -151,7 +142,7 @@ final class APIIntegrationTests: XCTestCase {
             includeHistory: false
         )
         
-        try app.test(.POST, "api/game/simulate", beforeRequest: { req in
+        try await app.test(.POST, "api/game/simulate", beforeRequest: { req in
             try req.content.encode(simulationRequest)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -177,8 +168,7 @@ final class APIIntegrationTests: XCTestCase {
         
         for rule in rules {
             let request = GameStepRequest(grid: testGrid, rules: rule)
-            
-            try app.test(.POST, "api/game/step", beforeRequest: { req in
+            try await app.test(.POST, "api/game/step", beforeRequest: { req in
                 try req.content.encode(request)
             }, afterResponse: { res in
                 XCTAssertEqual(res.status, .ok)
@@ -200,7 +190,7 @@ final class APIIntegrationTests: XCTestCase {
     // MARK: - Error Handling Integration
     
     func testCORSHeaders() async throws {
-        try app.test(.OPTIONS, "api/patterns", beforeRequest: { req in
+        try await app.test(.OPTIONS, "api/patterns", beforeRequest: { req in
             req.headers.add(name: .origin, value: "https://example.com")
             req.headers.add(name: .accessControlRequestMethod, value: "GET")
         }, afterResponse: { res in
@@ -210,21 +200,19 @@ final class APIIntegrationTests: XCTestCase {
     }
     
     func testJSONContentType() async throws {
-        try app.test(.GET, "api/patterns", afterResponse: { res in
+        try await app.test(.GET, "api/patterns", afterResponse: { res in
             XCTAssertEqual(res.headers.contentType, .json)
         })
-        
-        try app.test(.GET, "health", afterResponse: { res in
+        try await app.test(.GET, "health", afterResponse: { res in
             XCTAssertEqual(res.headers.contentType, .json)
         })
     }
     
     func testInvalidRoutes() async throws {
-        try app.test(.GET, "nonexistent", afterResponse: { res in
+        try await app.test(.GET, "nonexistent", afterResponse: { res in
             XCTAssertEqual(res.status, .notFound)
         })
-        
-        try app.test(.POST, "api/invalid", afterResponse: { res in
+        try await app.test(.POST, "api/invalid", afterResponse: { res in
             XCTAssertEqual(res.status, .notFound)
         })
     }
@@ -241,7 +229,7 @@ final class APIIntegrationTests: XCTestCase {
         
         let request = GameStepRequest(grid: largeGrid, rules: "conway")
         
-        try app.test(.POST, "api/game/step", beforeRequest: { req in
+        try await app.test(.POST, "api/game/step", beforeRequest: { req in
             try req.content.encode(request)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
@@ -260,10 +248,10 @@ final class APIIntegrationTests: XCTestCase {
             includeHistory: false
         )
         
-        try app.test(.POST, "api/game/simulate", beforeRequest: { req in
+        try await app.test(.POST, "api/game/simulate", beforeRequest: { req in
             try req.content.encode(request)
         }, afterResponse: { res in
             XCTAssertEqual(res.status, .ok)
         })
-    }
+}
 }

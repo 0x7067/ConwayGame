@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 
-struct ErrorMiddleware: AsyncMiddleware {
+struct APIErrorMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         do {
             return try await next.respond(to: request)
@@ -76,7 +76,7 @@ struct ErrorMiddleware: AsyncMiddleware {
 
 // MARK: - CORS Middleware
 
-struct CORSMiddleware: AsyncMiddleware {
+struct SimpleCORSMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         // Handle preflight requests
         if request.method == .OPTIONS {
@@ -101,7 +101,7 @@ struct CORSMiddleware: AsyncMiddleware {
 
 // MARK: - Content Type Middleware
 
-struct ContentTypeMiddleware: AsyncMiddleware {
+struct JSONContentTypeMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         let response = try await next.respond(to: request)
         

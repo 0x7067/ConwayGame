@@ -2,16 +2,23 @@ import Foundation
 import Vapor
 
 public func configure(_ app: Application) throws {
+    // MARK: - JSON Encoding/Decoding
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+    ContentConfiguration.global.use(encoder: encoder, for: .json)
+    ContentConfiguration.global.use(decoder: decoder, for: .json)
     // MARK: - Middleware Configuration
     
     // Add CORS support
-    app.middleware.use(CORSMiddleware())
+    app.middleware.use(SimpleCORSMiddleware())
     
     // Add content type middleware
-    app.middleware.use(ContentTypeMiddleware())
+    app.middleware.use(JSONContentTypeMiddleware())
     
     // Add error handling middleware
-    app.middleware.use(ErrorMiddleware())
+    app.middleware.use(APIErrorMiddleware())
     
     // MARK: - Route Configuration
     
@@ -40,7 +47,7 @@ public func configure(_ app: Application) throws {
                 "GET /api/patterns/{name}": "Get specific pattern",
                 "GET /api/rules": "List all rules"
             ],
-            documentation: "https://github.com/anthropics/ConwayGame/blob/main/ConwayAPI/README.md"
+            documentation: "https://github.com/0x7067/ConwayGame/blob/main/ConwayAPI/README.md"
         )
     }
     

@@ -154,8 +154,8 @@ struct GameController: RouteCollection {
         } catch let error as GridValidationError {
             return ValidationResponse(
                 isValid: false,
-                width: nil,
-                height: nil,
+                width: request.grid.first?.count,
+                height: request.grid.count,
                 population: nil,
                 errors: [error.localizedDescription]
             )
@@ -191,6 +191,18 @@ struct GameController: RouteCollection {
                 )
             }
         }
+
+        // Enforce reasonable caps to protect server resources
+        let maxWidth = 200
+        let maxHeight = 200
+        if firstRowWidth > maxWidth || grid.count > maxHeight {
+            throw GridValidationError.gridTooLarge(
+                width: firstRowWidth,
+                height: grid.count,
+                maxWidth: maxWidth,
+                maxHeight: maxHeight
+            )
+        }
     }
     
     private func getGameConfiguration(for ruleName: String) throws -> GameEngineConfiguration {
@@ -207,6 +219,8 @@ struct GameController: RouteCollection {
     }
     
     private func gridsEqual(_ grid1: [[Bool]], _ grid2: [[Bool]]) -> Bool {
+        // Fast path: identical storage (engine returns original instance when unchanged)
+        if (grid1 as AnyObject) === (grid2 as AnyObject) { return true }
         guard grid1.count == grid2.count else { return false }
         
         for (row1, row2) in zip(grid1, grid2) {
@@ -227,6 +241,7 @@ enum GridValidationError: LocalizedError {
     case emptyGrid
     case emptyRow(Int)
     case inconsistentWidth(row: Int, expected: Int, actual: Int)
+    case gridTooLarge(width: Int, height: Int, maxWidth: Int, maxHeight: Int)
     
     var errorDescription: String? {
         switch self {
@@ -236,6 +251,8 @@ enum GridValidationError: LocalizedError {
             return "Row \(row) cannot be empty"
         case .inconsistentWidth(let row, let expected, let actual):
             return "Row \(row) has inconsistent width: expected \(expected), got \(actual)"
+        case .gridTooLarge(let width, let height, let maxW, let maxH):
+            return "Grid too large: \(width)x\(height). Max allowed is \(maxW)x\(maxH)"
         }
     }
 }

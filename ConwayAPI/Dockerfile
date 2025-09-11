@@ -8,15 +8,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
-WORKDIR /app
+WORKDIR /app/ConwayAPI
 
-# Copy package manifests
-COPY Package.swift Package.resolved ./
-COPY ../ConwayGameEngine/Package.swift ../ConwayGameEngine/
-COPY ../ConwayGameEngine/Sources ../ConwayGameEngine/Sources
+# Copy ConwayAPI package manifests
+COPY ConwayAPI/Package.swift ./
+COPY ConwayAPI/Package.resolved ./
+
+# Copy dependency package (local path dependency)
+COPY ConwayGameEngine /app/ConwayGameEngine
 
 # Copy source code
-COPY Sources ./Sources
+COPY ConwayAPI/Sources ./Sources
 
 # Build the application
 RUN swift build -c release --static-swift-stdlib
@@ -27,6 +29,7 @@ FROM ubuntu:jammy-20240808
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -37,7 +40,7 @@ WORKDIR /app
 USER conway:conway
 
 # Copy built executable
-COPY --from=build --chown=conway:conway /app/.build/release/conway-api /app/
+COPY --from=build --chown=conway:conway /app/ConwayAPI/.build/release/conway-api /app/
 
 # Expose port
 EXPOSE 8080
