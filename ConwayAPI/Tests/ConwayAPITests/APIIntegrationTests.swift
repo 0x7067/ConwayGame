@@ -499,12 +499,14 @@ final class APIIntegrationTests: XCTestCase {
     func testAPIErrorHandlingScenarios() async throws {
         // Test various error conditions and recovery
 
-        // 1. Invalid grid sizes  
+        // 1. Invalid grid sizes
         let invalidGrids = [
             ([], "Empty grid"),
             ([[]], "Empty row"),
             ([[true], [true, false]], "Inconsistent row lengths"),
-            (Array(repeating: Array(repeating: true, count: 300), count: 300), "Oversized grid") // Use 300x300 to ensure rejection
+            (
+                Array(repeating: Array(repeating: true, count: 300), count: 300),
+                "Oversized grid") // Use 300x300 to ensure rejection
         ]
 
         for (invalidGrid, description) in invalidGrids {
@@ -514,7 +516,7 @@ final class APIIntegrationTests: XCTestCase {
                 let response: ValidationResponse = try await app.decode(.POST, "api/game/validate") { req in
                     try req.content.encode(request)
                 }
-                
+
                 // Check if the API correctly identified it as invalid
                 if !response.isValid {
                     print("\(description) correctly rejected with errors: \(response.errors)")
