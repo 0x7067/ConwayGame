@@ -5,23 +5,51 @@ import ConwayGameEngine
 // MARK: - Mock Repository for Testing
 
 final class MockBoardRepository: BoardRepository {
-    private var storage: [UUID: Board] = [:]
+    private actor StorageActor {
+        private var storage: [UUID: Board] = [:]
+        
+        func get(_ id: UUID) -> Board? {
+            return storage[id]
+        }
+        
+        func set(_ id: UUID, _ board: Board) {
+            storage[id] = board
+        }
+        
+        func remove(_ id: UUID) {
+            storage.removeValue(forKey: id)
+        }
+        
+        func getAll() -> [Board] {
+            return Array(storage.values)
+        }
+        
+        func clear() {
+            storage.removeAll()
+        }
+        
+        func count() -> Int {
+            return storage.count
+        }
+    }
+    
+    private let storageActor = StorageActor()
     var shouldThrowError = false
     var errorToThrow: GameError = .computationError("Mock error")
     
     func save(_ board: Board) async throws {
         if shouldThrowError { throw errorToThrow }
-        storage[board.id] = board
+        await storageActor.set(board.id, board)
     }
     
     func load(id: UUID) async throws -> Board? {
         if shouldThrowError { throw errorToThrow }
-        return storage[id]
+        return await storageActor.get(id)
     }
     
     func loadAll() async throws -> [Board] {
         if shouldThrowError { throw errorToThrow }
-        return Array(storage.values)
+        return await storageActor.getAll()
     }
     
     func loadBoardsPaginated(offset: Int, limit: Int, sortBy: BoardSortOption) async throws -> BoardListPage {
@@ -32,7 +60,7 @@ final class MockBoardRepository: BoardRepository {
             throw GameError.computationError("Invalid pagination parameters: offset=\(offset), limit=\(limit)")
         }
         
-        let allBoards = Array(storage.values)
+        let allBoards = await storageActor.getAll()
         let sortedBoards = sortBoards(allBoards, by: sortBy)
         let totalCount = sortedBoards.count
         let startIndex = min(offset, totalCount)
@@ -58,7 +86,7 @@ final class MockBoardRepository: BoardRepository {
             throw GameError.computationError("Invalid pagination parameters: offset=\(offset), limit=\(limit)")
         }
         
-        let allBoards = Array(storage.values)
+        let allBoards = await storageActor.getAll()
         let filteredBoards = query.isEmpty ? allBoards : allBoards.filter { board in
             board.name.localizedCaseInsensitiveContains(query)
         }
@@ -81,7 +109,7 @@ final class MockBoardRepository: BoardRepository {
     
     func getTotalBoardCount() async throws -> Int {
         if shouldThrowError { throw errorToThrow }
-        return storage.count
+        return await storageActor.count()
     }
     
     private func sortBoards(_ boards: [Board], by sortOption: BoardSortOption) -> [Board] {
@@ -103,44 +131,46 @@ final class MockBoardRepository: BoardRepository {
     
     func delete(id: UUID) async throws {
         if shouldThrowError { throw errorToThrow }
-        storage.removeValue(forKey: id)
+        await storageActor.remove(id)
     }
     
     func rename(id: UUID, newName: String) async throws {
         if shouldThrowError { throw errorToThrow }
-        guard var board = storage[id] else {
+        guard var board = await storageActor.get(id) else {
             throw GameError.boardNotFound(id)
         }
         board.name = newName
-        storage[id] = board
+        await storageActor.set(id, board)
     }
     
     func reset(id: UUID) async throws -> Board {
         if shouldThrowError {
             throw errorToThrow
         }
-        guard var board = storage[id] else {
+        guard var board = await storageActor.get(id) else {
             throw GameError.boardNotFound(id)
         }
         board.cells = board.initialCells
         board.currentGeneration = 0
         board.stateHistory = [BoardHashing.hash(for: board.initialCells)]
-        storage[id] = board
+        await storageActor.set(id, board)
         return board
     }
     
     // Test helpers
-    func clear() {
-        storage.removeAll()
+    func clear() async {
+        await storageActor.clear()
         shouldThrowError = false
     }
     
-    func preloadBoard(_ board: Board) {
-        storage[board.id] = board
+    func preloadBoard(_ board: Board) async {
+        await storageActor.set(board.id, board)
     }
     
     var storedBoardCount: Int {
-        storage.count
+        get async {
+            return await storageActor.count()
+        }
     }
 }
 
@@ -239,7 +269,7 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
     
     func testLoadBoardsPaginatedFirstPageReturnsCorrectResults() async throws {
         // Create 15 boards with different creation dates
-        let boards = try await createTestBoards(count: 15)
+        _ = try await createTestBoards(count: 15)
         
         let page = try await repository.loadBoardsPaginated(offset: 0, limit: 10, sortBy: .createdAtDescending)
         
@@ -256,7 +286,7 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
     }
     
     func testLoadBoardsPaginatedSecondPageReturnsRemainingResults() async throws {
-        let boards = try await createTestBoards(count: 15)
+        _ = try await createTestBoards(count: 15)
         
         let page = try await repository.loadBoardsPaginated(offset: 10, limit: 10, sortBy: .createdAtDescending)
         
@@ -268,7 +298,7 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
     }
     
     func testLoadBoardsPaginatedOffsetBeyondTotalReturnsEmptyPage() async throws {
-        let boards = try await createTestBoards(count: 5)
+        _ = try await createTestBoards(count: 5)
         
         let page = try await repository.loadBoardsPaginated(offset: 10, limit: 10, sortBy: .createdAtDescending)
         
@@ -300,7 +330,7 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
     }
     
     func test_searchBoards_emptyQuery_returnsAllBoards() async throws {
-        let boards = try await createTestBoards(count: 5)
+        _ = try await createTestBoards(count: 5)
         
         let page = try await repository.searchBoards(query: "", offset: 0, limit: 10, sortBy: .createdAtDescending)
         
@@ -367,7 +397,7 @@ final class InMemoryBoardRepositoryTests: XCTestCase {
     }
     
     func test_getTotalBoardCount_withBoards_returnsCorrectCount() async throws {
-        let boards = try await createTestBoards(count: 7)
+        _ = try await createTestBoards(count: 7)
         
         let count = try await repository.getTotalBoardCount()
         XCTAssertEqual(count, 7)
@@ -580,32 +610,39 @@ final class MockBoardRepositoryTests: XCTestCase {
         super.tearDown()
     }
     
-    func test_mock_callCounters() async throws {
+    func test_mock_behaviorVerification() async throws {
         let board = try createTestBoard()
         
-        // Test save
+        // Test save - verify board is stored
         try await mockRepository.save(board)
-        XCTAssertEqual(mockRepository.saveCallCount, 1)
+        let countAfterSave = await mockRepository.storedBoardCount
+        XCTAssertEqual(countAfterSave, 1)
         
-        // Test load
-        _ = try await mockRepository.load(id: board.id)
-        XCTAssertEqual(mockRepository.loadCallCount, 1)
+        // Test load - verify board can be retrieved
+        let loadedBoard = try await mockRepository.load(id: board.id)
+        XCTAssertEqual(loadedBoard, board)
         
-        // Test loadAll
-        _ = try await mockRepository.loadAll()
-        XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+        // Test loadAll - verify all boards are returned
+        let allBoards = try await mockRepository.loadAll()
+        XCTAssertEqual(allBoards.count, 1)
+        XCTAssertEqual(allBoards.first, board)
         
-        // Test rename
+        // Test rename - verify name is updated
         try await mockRepository.rename(id: board.id, newName: "New Name")
-        XCTAssertEqual(mockRepository.renameCallCount, 1)
+        let renamedBoard = try await mockRepository.load(id: board.id)
+        XCTAssertEqual(renamedBoard?.name, "New Name")
         
-        // Test reset
-        _ = try await mockRepository.reset(id: board.id)
-        XCTAssertEqual(mockRepository.resetCallCount, 1)
+        // Test reset - verify board is reset to initial state
+        let resetBoard = try await mockRepository.reset(id: board.id)
+        XCTAssertEqual(resetBoard.cells, board.initialCells)
+        XCTAssertEqual(resetBoard.currentGeneration, 0)
         
-        // Test delete
+        // Test delete - verify board is removed
         try await mockRepository.delete(id: board.id)
-        XCTAssertEqual(mockRepository.deleteCallCount, 1)
+        let countAfterDelete = await mockRepository.storedBoardCount
+        XCTAssertEqual(countAfterDelete, 0)
+        let deletedBoard = try await mockRepository.load(id: board.id)
+        XCTAssertNil(deletedBoard)
     }
     
     func test_mock_errorThrowing() async throws {
@@ -623,25 +660,25 @@ final class MockBoardRepositoryTests: XCTestCase {
     
     func test_mock_preloadBoard() async throws {
         let board = try createTestBoard()
-        mockRepository.preloadBoard(board)
+        await mockRepository.preloadBoard(board)
         
-        XCTAssertEqual(mockRepository.storedBoardCount, 1)
+        let countAfterPreload = await mockRepository.storedBoardCount
+        XCTAssertEqual(countAfterPreload, 1)
         
         let loaded = try await mockRepository.load(id: board.id)
         XCTAssertEqual(loaded, board)
-        XCTAssertEqual(mockRepository.loadCallCount, 1)
     }
     
     func test_mock_clear() async throws {
         let board = try createTestBoard()
         try await mockRepository.save(board)
-        XCTAssertEqual(mockRepository.saveCallCount, 1)
-        XCTAssertEqual(mockRepository.storedBoardCount, 1)
+        let countAfterSave = await mockRepository.storedBoardCount
+        XCTAssertEqual(countAfterSave, 1)
         
-        mockRepository.clear()
+        await mockRepository.clear()
         
-        XCTAssertEqual(mockRepository.saveCallCount, 0)
-        XCTAssertEqual(mockRepository.storedBoardCount, 0)
+        let countAfterClear = await mockRepository.storedBoardCount
+        XCTAssertEqual(countAfterClear, 0)
     }
     
     private func createTestBoard() throws -> Board {

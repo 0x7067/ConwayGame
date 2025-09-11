@@ -39,7 +39,8 @@ final class GameServiceTests: XCTestCase {
         
         let id = await gameService.createBoard(grid)
         XCTAssertNotEqual(id, UUID())
-        XCTAssertEqual(mockRepository.storedBoardCount, 1)
+        let count = await mockRepository.storedBoardCount
+        XCTAssertEqual(count, 1)
     }
     
     func test_createBoard_emptyGrid_handlesGracefully() async {

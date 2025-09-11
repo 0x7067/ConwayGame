@@ -133,7 +133,7 @@ final class BoardListViewModel: ObservableObject {
             totalCount = max(0, totalCount - 1)
         } catch {
             // If delete fails, reload to ensure consistency
-            await load()
+            await loadFirstPage()
             if let gameError = error as? GameError {
                 self.gameError = gameError
             } else {
@@ -157,7 +157,7 @@ final class BoardListViewModel: ObservableObject {
     func handleRecoveryAction(_ action: ErrorRecoveryAction) {
         switch action {
         case .retry:
-            Task { await load() }
+            Task { await loadFirstPage() }
         case .goBack, .goToBoardList, .createNew, .continueWithoutSaving, .cancel, .contactSupport, .resetBoard, .tryAgain:
             break
         }

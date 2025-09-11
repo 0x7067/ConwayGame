@@ -21,7 +21,7 @@ final class PaginationViewModelTests: XCTestCase {
     
     func testPaginationFlowWithLargeDataset() async throws {
         // Create 50 test boards
-        let testBoards = try await createTestBoards(count: 50)
+        _ = try await createTestBoards(count: 50)
         
         // Test first page (20 items)
         let firstPage = try await repository.loadBoardsPaginated(

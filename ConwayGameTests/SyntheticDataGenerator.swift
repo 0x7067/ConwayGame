@@ -21,7 +21,7 @@ final class SyntheticDataGenerator {
         for batchIndex in 0..<batches {
             let startIndex = batchIndex * batchSize
             let endIndex = min(startIndex + batchSize, count)
-            let batchCount = endIndex - startIndex
+            _ = endIndex - startIndex
             
             // Generate batch of boards
             var boards: [Board] = []
