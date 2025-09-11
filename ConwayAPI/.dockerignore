@@ -1,0 +1,33 @@
+# Build artifacts
+.build/
+build/
+DerivedData/
+
+# Package Manager
+.swiftpm/
+Package.resolved
+
+# IDE files
+.vscode/
+.idea/
+*.xcodeproj
+*.xcworkspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Tests (not needed in production)
+Tests/
+
+# Other
+tmp/
+.env*
