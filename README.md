@@ -1,5 +1,7 @@
 # Conway's Game of Life
 
+[![ConwayAPI CI](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml/badge.svg)](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml)
+
 A Swift implementation of Conway's Game of Life with:
 - An iOS app (SwiftUI) under `ConwayGame` with Core Data pagination for large datasets
 - A reusable engine as a Swift Package under `ConwayGameEngine`

@@ -1,5 +1,7 @@
 # Conway's Game of Life REST API
 
+[![ConwayAPI CI](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml/badge.svg)](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml)
+
 A high-performance REST API for Conway's Game of Life simulation built with Swift and Vapor.
 
 ## Quick Start
