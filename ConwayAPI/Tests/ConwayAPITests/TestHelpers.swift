@@ -13,14 +13,15 @@ extension Application {
     }
 
     @discardableResult
-    func perform(_ method: HTTPMethod, _ path: String, expecting status: HTTPStatus, beforeRequest: (inout XCTHTTPRequest) throws -> Void = { _ in }) async throws -> XCTHTTPResponse {
+    func perform(_ method: HTTPMethod, _ path: String, expecting status: HTTPStatus, json: Bool = false, beforeRequest: (inout XCTHTTPRequest) throws -> Void = { _ in }) async throws -> XCTHTTPResponse {
         let res = try await perform(method, path, beforeRequest: beforeRequest)
         XCTAssertEqual(res.status, status)
+        if json { XCTAssertEqual(res.headers.contentType, .json) }
         return res
     }
 
-    func decode<T: Decodable>(_ method: HTTPMethod, _ path: String, expecting status: HTTPStatus = .ok, beforeRequest: (inout XCTHTTPRequest) throws -> Void = { _ in }) async throws -> T {
-        let res = try await perform(method, path, expecting: status, beforeRequest: beforeRequest)
+    func decode<T: Decodable>(_ method: HTTPMethod, _ path: String, expecting status: HTTPStatus = .ok, json: Bool = false, beforeRequest: (inout XCTHTTPRequest) throws -> Void = { _ in }) async throws -> T {
+        let res = try await perform(method, path, expecting: status, json: json, beforeRequest: beforeRequest)
         return try res.content.decode(T.self)
     }
 }
