@@ -3,6 +3,9 @@ import CoreData
 import OSLog
 import ConwayGameEngine
 
+/// Core Data repository implementation for Board persistence.
+/// Uses @unchecked Sendable because NSPersistentContainer is thread-safe when accessed
+/// through separate background contexts, as done in this implementation.
 final class CoreDataBoardRepository: BoardRepository, @unchecked Sendable {
     private let container: NSPersistentContainer
 

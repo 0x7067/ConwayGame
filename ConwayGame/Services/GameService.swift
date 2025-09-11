@@ -135,24 +135,7 @@ public final class DefaultGameService: GameService {
                 }
                 
                 history.insert(hash)
-                let nextState = gameEngine.computeNextState(state)
-                
-                // Check for immediate still-life pattern
-                if nextState == state {
-                    let population = state.population
-                    let gs = GameState(
-                        boardId: board.id,
-                        generation: generation + 1,
-                        cells: state,
-                        isStable: true,
-                        populationCount: population,
-                        convergedAt: generation + 1,
-                        convergenceType: .cyclical(period: 1)
-                    )
-                    return .success(gs)
-                }
-                
-                state = nextState
+                state = gameEngine.computeNextState(state)
             }
             
             // Check if we reached the generation limit with living cells

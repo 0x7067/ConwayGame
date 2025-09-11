@@ -14,7 +14,7 @@ Welcome! This project implements Conway's Game of Life as a production-ready iOS
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd ConwayGame-dependencyInjection
+   cd ConwayGame
    ```
 
 2. **Open the iOS project**
