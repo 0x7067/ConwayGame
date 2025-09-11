@@ -1,0 +1,196 @@
+name: ⚡ Performance Issue
+description: Report performance problems or suggest optimizations
+title: "[Performance]: "
+labels: ["performance", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a performance issue! Performance is crucial for Conway's Game of Life, especially with large grids and fast simulations.
+
+  - type: checkboxes
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the app has performance issues?
+      options:
+        - label: Game Engine (Conway's Game computation)
+        - label: UI Rendering (Board display, animations)
+        - label: Data Persistence (Core Data operations)
+        - label: Memory Usage (Excessive memory consumption)
+        - label: App Launch/Startup
+        - label: CLI Tool (ConwayCLI performance)
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Performance Issue Type
+      description: What kind of performance problem are you experiencing?
+      options:
+        - Slow computation (game updates take too long)
+        - UI lag/stuttering (interface not responsive)
+        - High memory usage (app uses too much RAM)
+        - Battery drain (app consumes excessive power)
+        - App freeze/crash (app becomes unresponsive)
+        - Slow app launch (takes too long to start)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Performance Issue Description
+      description: Describe the performance problem you're experiencing
+      placeholder: |
+        Be specific about what's slow, unresponsive, or consuming too many resources.
+        Include what you were doing when you noticed the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this performance issue?
+      placeholder: |
+        1. Create a board with dimensions...
+        2. Set the pattern to...
+        3. Run simulation for X generations...
+        4. Notice performance issue...
+    validations:
+      required: true
+
+  - type: textarea
+    id: game-context
+    attributes:
+      label: Game Configuration
+      description: Details about the game state when performance issues occur
+      placeholder: |
+        - Board dimensions: (e.g., 100x100, 200x200)
+        - Pattern type: (e.g., Random 30% density, Gosper Gun, Custom pattern)
+        - Generation count: (e.g., After 500 generations)
+        - Auto-play speed: (e.g., Maximum speed, 10ms delay)
+        - Convergence state: (e.g., Still evolving, reached extinction, cyclical)
+        - Number of living cells: (approximate)
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurements
+    attributes:
+      label: Performance Measurements
+      description: |
+        If you have specific measurements, please include them.
+        Use Xcode Instruments, built-in profilers, or timing observations.
+      placeholder: |
+        Examples:
+        - Generation computation takes 2.5 seconds (should be <100ms)
+        - Memory usage grows to 500MB (expected ~50MB)
+        - UI freezes for 3-4 seconds during auto-play
+        - CPU usage at 100% during simulation
+        - Frame rate drops to 10fps during animation
+      render: shell
+
+  - type: input
+    id: device-specs
+    attributes:
+      label: Device Specifications
+      description: Device model and relevant specs
+      placeholder: "e.g., iPhone 15 Pro (A17 Pro), iPad Air 4th gen (A14), M1 Mac"
+    validations:
+      required: true
+
+  - type: input
+    id: ios-version
+    attributes:
+      label: iOS Version
+      placeholder: "e.g., iOS 17.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does this happen?
+      options:
+        - Always with these conditions
+        - Most of the time
+        - Sometimes
+        - Rarely
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-performance
+    attributes:
+      label: Expected Performance
+      description: What performance would you expect instead?
+      placeholder: |
+        Describe what you think reasonable performance should be:
+        - Generation computation should complete in <X seconds
+        - UI should remain responsive during simulation
+        - Memory usage should stay under X MB
+        - etc.
+
+  - type: textarea
+    id: comparison
+    attributes:
+      label: Performance Comparison
+      description: |
+        Have you noticed different performance in other scenarios?
+        For example, smaller boards, different patterns, older iOS versions, etc.
+      placeholder: |
+        Examples:
+        - 50x50 board runs smoothly, but 100x100 is very slow
+        - Random patterns perform better than structured patterns
+        - Performance was better in previous app version
+        - Works fine on newer device but slow on older device
+
+  - type: textarea
+    id: profiling-data
+    attributes:
+      label: Profiling Data
+      description: |
+        If you have Xcode Instruments profiles, performance logs, or crash reports, 
+        please attach them or paste relevant excerpts here.
+      render: shell
+
+  - type: textarea
+    id: optimization-ideas
+    attributes:
+      label: Optimization Ideas
+      description: Do you have suggestions for how to improve this performance issue?
+      placeholder: |
+        If you have ideas for optimization approaches, please share them:
+        - Algorithm improvements
+        - Caching strategies
+        - UI rendering optimizations
+        - Memory management improvements
+        - etc.
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact Level
+      description: How does this performance issue affect your usage?
+      options:
+        - label: Blocks usage completely (app unusable)
+        - label: Significantly impacts experience (frustrating delays)
+        - label: Mild inconvenience (noticeable but tolerable)
+        - label: Minor issue (barely noticeable)
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm you've completed these steps
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided specific details about the performance issue
+          required: true
+        - label: I have included device specifications and game configuration
+          required: true
+        - label: I can reproduce this issue consistently
+          required: false

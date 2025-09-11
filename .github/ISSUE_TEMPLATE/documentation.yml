@@ -1,0 +1,194 @@
+name: 📚 Documentation
+description: Report documentation issues or suggest improvements
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve our documentation! Clear documentation makes the project more accessible to everyone.
+
+  - type: checkboxes
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What kind of documentation needs attention?
+      options:
+        - label: README.md (Project overview, quick start)
+        - label: CONTRIBUTING.md (Contribution guidelines)
+        - label: Code Documentation (Inline comments, API docs)
+        - label: Architecture Documentation (System design, patterns)
+        - label: Setup/Installation Instructions
+        - label: Testing Documentation (How to run/write tests)
+        - label: CLI Usage Documentation (ConwayCLI commands)
+        - label: Build/Deployment Documentation
+        - label: Examples/Tutorials
+        - label: Performance Guidelines
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing documentation (information doesn't exist)
+        - Incorrect information (documentation is wrong/outdated)
+        - Unclear/confusing (hard to understand)
+        - Incomplete (missing important details)
+        - Outdated (needs updating for current version)
+        - Improvement suggestion (enhancement idea)
+        - New documentation needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the documentation problem or improvement needed
+      placeholder: |
+        Be specific about what's missing, incorrect, or confusing.
+        Include the context of what you were trying to do when you encountered this issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Where is this documentation issue located?
+      placeholder: |
+        Examples:
+        - README.md, section "Quick Start"
+        - CONTRIBUTING.md, line 45
+        - ConwayGame/Services/GameService.swift, method documentation
+        - Missing from any documentation
+        - https://github.com/user/repo/blob/main/path/to/file.md#section
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: |
+        If this is about existing documentation, paste the current content that needs fixing.
+        Use triple backticks (```) for code blocks.
+      placeholder: |
+        Paste the current documentation text that's problematic, or write "N/A" if documentation doesn't exist.
+
+  - type: textarea
+    id: proposed-content
+    attributes:
+      label: Proposed Improvement
+      description: How should this documentation be improved?
+      placeholder: |
+        Provide your suggested text, structure, or approach.
+        For new documentation, outline what should be covered.
+        For corrections, provide the accurate information.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - New contributors (first-time setup)
+        - Experienced developers (advanced topics)
+        - End users (app usage)
+        - Maintainers (project management)
+        - All audiences
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: User Context
+      description: What were you trying to accomplish when you noticed this documentation issue?
+      placeholder: |
+        Examples:
+        - I was trying to set up the development environment
+        - I wanted to understand the game engine architecture
+        - I was looking for how to run specific tests
+        - I needed to know how to add a new pattern
+        - I was trying to understand the CLI tool usage
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this documentation improvement?
+      options:
+        - Critical (blocks getting started)
+        - High (significantly improves clarity)
+        - Medium (helpful improvement)
+        - Low (minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or References
+      description: |
+        Are there good examples of similar documentation in other projects?
+        Include links or describe approaches you've seen work well.
+      placeholder: |
+        Links to well-documented projects or specific examples of good documentation style.
+
+  - type: checkboxes
+    id: format
+    attributes:
+      label: Documentation Format
+      description: What format would work best for this documentation?
+      options:
+        - label: Markdown text
+        - label: Code examples with comments
+        - label: Step-by-step tutorial
+        - label: Architecture diagrams
+        - label: Screenshots/images
+        - label: Video walkthrough
+        - label: Interactive examples
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details
+      description: |
+        For code documentation issues, include relevant technical context.
+        For API documentation, specify parameters, return types, etc.
+      placeholder: |
+        Include any technical details that should be documented:
+        - Method signatures
+        - Parameter descriptions
+        - Return value explanations
+        - Usage examples
+        - Error conditions
+        - Performance considerations
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Interest
+      description: Would you like to help improve this documentation?
+      options:
+        - label: I'd like to write/update this documentation myself
+        - label: I can provide technical review
+        - label: I can help with examples/testing
+        - label: I'm reporting but not able to contribute directly
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm you've completed these steps
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have clearly described the documentation problem or improvement
+          required: true
+        - label: I have specified the location of the documentation issue
+          required: true
