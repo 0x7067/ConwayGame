@@ -2,6 +2,10 @@ import Foundation
 import Vapor
 
 public func configure(_ app: Application) throws {
+    // MARK: - Configuration
+    app.apiConfiguration = .fromEnvironment()
+    let config = app.apiConfiguration
+    
     // MARK: - JSON Encoding/Decoding
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .iso8601
@@ -9,10 +13,11 @@ public func configure(_ app: Application) throws {
     decoder.dateDecodingStrategy = .iso8601
     ContentConfiguration.global.use(encoder: encoder, for: .json)
     ContentConfiguration.global.use(decoder: decoder, for: .json)
+    
     // MARK: - Middleware Configuration
     
-    // Add CORS support
-    app.middleware.use(SimpleCORSMiddleware())
+    // Add CORS support with configuration
+    app.middleware.use(ConfigurableCORSMiddleware(config: config))
     
     // Add content type middleware
     app.middleware.use(JSONContentTypeMiddleware())
@@ -27,7 +32,7 @@ public func configure(_ app: Application) throws {
         return HealthResponse(
             status: "healthy",
             timestamp: Date(),
-            version: "1.0.0"
+            version: config.apiVersion
         )
     }
     
@@ -35,7 +40,7 @@ public func configure(_ app: Application) throws {
     app.get("api") { req in
         return APIInfoResponse(
             name: "Conway's Game of Life API",
-            version: "1.0.0",
+            version: config.apiVersion,
             description: "A high-performance REST API for Conway's Game of Life simulation",
             endpoints: [
                 "GET /health": "Health check",
