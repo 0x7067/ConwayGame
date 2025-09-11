@@ -1,0 +1,140 @@
+{
+  "info": {
+    "name": "ConwayAPI",
+    "_postman_id": "d87c7d3f-0d2a-4d36-9a4f-000000000000",
+    "description": "Postman collection for Conway's Game of Life REST API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "API Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api",
+          "host": ["{{baseUrl}}"],
+          "path": ["api"]
+        }
+      }
+    },
+    {
+      "name": "Game - Step",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"grid\": [\n    [false, true, false],\n    [false, true, false],\n    [false, true, false]\n  ],\n  \"rules\": \"conway\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/step",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "step"]
+        }
+      }
+    },
+    {
+      "name": "Game - Simulate",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"grid\": [\n    [false, false, true, false],\n    [false, false, false, true],\n    [false, true, true, true]\n  ],\n  \"generations\": 4,\n  \"rules\": \"conway\",\n  \"includeHistory\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/simulate",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "simulate"]
+        }
+      }
+    },
+    {
+      "name": "Game - Validate",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"grid\": [\n    [true, false, true],\n    [false, true, false],\n    [true, false, true]\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/game/validate",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "game", "validate"]
+        }
+      }
+    },
+    {
+      "name": "Patterns",
+      "item": [
+        {
+          "name": "List Patterns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patterns",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patterns"]
+            }
+          }
+        },
+        {
+          "name": "Get Pattern - glider",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patterns/glider",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patterns", "glider"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rules - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/rules",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "rules"]
+        }
+      }
+    }
+  ]
+}
+
