@@ -280,7 +280,8 @@ final class PerformanceTestUtils {
         let result = try await block()
         
         let endMemory = getCurrentMemoryUsage()
-        let memoryUsage = endMemory - startMemory
+        // Memory can fluctuate; guard against negative diffs to avoid overflow
+        let memoryUsage = endMemory >= startMemory ? (endMemory - startMemory) : 0
         
         print("\(operation) memory usage: \(formatBytes(memoryUsage))")
         

@@ -32,8 +32,13 @@ extension Container {
         .cached
     }
     
+    var playSpeedConfiguration: Factory<PlaySpeedConfiguration> {
+        self { .default }
+        .singleton
+    }
+    
     var themeManager: Factory<ThemeManager> {
-        self { ThemeManager() }
+        self { ThemeManager(playSpeedConfiguration: self.playSpeedConfiguration()) }
         .singleton
     }
 }

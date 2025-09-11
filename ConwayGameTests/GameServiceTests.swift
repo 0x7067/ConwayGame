@@ -1,5 +1,6 @@
 import XCTest
 import ConwayGameEngine
+import FactoryKit
 @testable import ConwayGame
 
 final class GameServiceTests: XCTestCase {
@@ -627,21 +628,12 @@ final class GameServiceTests: XCTestCase {
         
         // Should still be able to access the board
         let final = await service.getNextState(boardId: id)
-        XCTAssertTrue(final.isSuccess)
-    }
-}
-
-// MARK: - Test Helpers
-
-extension Result {
-    var isSuccess: Bool {
-        switch self {
-        case .success: return true
-        case .failure: return false
+        switch final {
+        case .success:
+            break // Expected
+        case .failure(let error):
+            XCTFail("Expected success, got error: \(error)")
         }
     }
-    
-    var isFailure: Bool {
-        return !isSuccess
-    }
 }
+
