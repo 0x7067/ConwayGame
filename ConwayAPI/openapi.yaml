@@ -1,0 +1,291 @@
+openapi: 3.0.3
+info:
+  title: Conway's Game of Life API
+  version: 1.0.0
+  description: REST API for Conway's Game of Life built with Swift/Vapor.
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api:
+    get:
+      summary: API info
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInfoResponse'
+  /api/game/step:
+    post:
+      summary: Compute next generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameStepRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameStepResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/game/simulate:
+    post:
+      summary: Run N generations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameSimulationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameSimulationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/game/validate:
+    post:
+      summary: Validate grid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameValidationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+  /api/patterns:
+    get:
+      summary: List patterns
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternListResponse'
+  /api/patterns/{name}:
+    get:
+      summary: Get pattern
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternResponse'
+        '404':
+          description: Not Found
+  /api/rules:
+    get:
+      summary: List rule presets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesListResponse'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    BoolGrid:
+      type: array
+      items:
+        type: array
+        items:
+          type: boolean
+
+    HealthResponse:
+      type: object
+      properties:
+        status: { type: string, example: healthy }
+        timestamp: { type: string, format: date-time }
+        version: { type: string, example: 1.0.0 }
+      required: [status, timestamp, version]
+
+    APIInfoResponse:
+      type: object
+      properties:
+        name: { type: string }
+        version: { type: string }
+        description: { type: string }
+        endpoints:
+          type: object
+          additionalProperties:
+            type: string
+        documentation: { type: string }
+      required: [name, version, description, endpoints, documentation]
+
+    GameStepRequest:
+      type: object
+      properties:
+        grid: { $ref: '#/components/schemas/BoolGrid' }
+        rules: { type: string, nullable: true, example: conway }
+      required: [grid]
+
+    GameStepResponse:
+      type: object
+      properties:
+        grid: { $ref: '#/components/schemas/BoolGrid' }
+        generation: { type: integer }
+        population: { type: integer }
+        hasChanged: { type: boolean }
+      required: [grid, generation, population, hasChanged]
+
+    GameSimulationRequest:
+      type: object
+      properties:
+        grid: { $ref: '#/components/schemas/BoolGrid' }
+        generations: { type: integer, minimum: 1, maximum: 1000 }
+        rules: { type: string, nullable: true }
+        includeHistory: { type: boolean, nullable: true }
+      required: [grid, generations]
+
+    ConvergenceResponse:
+      type: object
+      properties:
+        type: { type: string, enum: [continuing, extinct, cyclical] }
+        period: { type: integer, nullable: true }
+        finalGeneration: { type: integer }
+      required: [type, finalGeneration]
+
+    GenerationState:
+      type: object
+      properties:
+        generation: { type: integer }
+        grid: { $ref: '#/components/schemas/BoolGrid' }
+        population: { type: integer }
+      required: [generation, grid, population]
+
+    GameSimulationResponse:
+      type: object
+      properties:
+        initialGrid: { $ref: '#/components/schemas/BoolGrid' }
+        finalGrid: { $ref: '#/components/schemas/BoolGrid' }
+        generationsRun: { type: integer }
+        finalPopulation: { type: integer }
+        convergence: { $ref: '#/components/schemas/ConvergenceResponse' }
+        history:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/GenerationState'
+      required: [initialGrid, finalGrid, generationsRun, finalPopulation, convergence]
+
+    GameValidationRequest:
+      type: object
+      properties:
+        grid: { $ref: '#/components/schemas/BoolGrid' }
+      required: [grid]
+
+    ValidationResponse:
+      type: object
+      properties:
+        isValid: { type: boolean }
+        width: { type: integer, nullable: true }
+        height: { type: integer, nullable: true }
+        population: { type: integer, nullable: true }
+        errors:
+          type: array
+          items:
+            type: string
+      required: [isValid, errors]
+
+    PatternInfo:
+      type: object
+      properties:
+        name: { type: string }
+        displayName: { type: string }
+        description: { type: string }
+        category: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+      required: [name, displayName, description, category, width, height]
+
+    PatternListResponse:
+      type: object
+      properties:
+        patterns:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatternInfo'
+      required: [patterns]
+
+    PatternResponse:
+      allOf:
+        - $ref: '#/components/schemas/PatternInfo'
+        - type: object
+          properties:
+            grid: { $ref: '#/components/schemas/BoolGrid' }
+          required: [grid]
+
+    RuleInfo:
+      type: object
+      properties:
+        name: { type: string }
+        displayName: { type: string }
+        description: { type: string }
+        survivalNeighborCounts:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 8 }
+        birthNeighborCounts:
+          type: array
+          items: { type: integer, minimum: 0, maximum: 8 }
+      required: [name, displayName, description, survivalNeighborCounts, birthNeighborCounts]
+
+    RulesListResponse:
+      type: object
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleInfo'
+      required: [rules]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+        timestamp: { type: string, format: date-time }
+      required: [error, message, timestamp]
+

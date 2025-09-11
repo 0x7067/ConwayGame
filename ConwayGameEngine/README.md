@@ -1,5 +1,7 @@
 # ConwayGameEngine
 
+[![ConwayAPI CI](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml/badge.svg)](https://github.com/0x7067/ConwayGame/actions/workflows/conwayapi-ci.yml)
+
 Core Swift package implementing Conway's Game of Life. Provides:
 - `ConwayGameEngine` library with configurable rules and pattern library
 - `conway-cli` executable for terminal simulations
@@ -34,4 +36,3 @@ Built-in presets:
 - The engine uses identity short-circuiting (returns the same grid instance when the generation is unchanged).
 - Convergence detector identifies extinction and repeats; period reporting is generic (period=0) without full history indexing.
 - See `ConwayAPI` for the REST interface to this engine.
-

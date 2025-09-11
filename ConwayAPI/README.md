@@ -60,6 +60,8 @@ Returns API health status.
 
 Returns API metadata and available endpoints.
 
+OpenAPI spec: see `ConwayAPI/openapi.yaml` (import into Swagger UI or Postman).
+
 ### Game Simulation
 
 #### Compute Next Generation
