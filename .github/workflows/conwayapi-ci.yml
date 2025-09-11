@@ -1,0 +1,79 @@
+name: ConwayAPI CI
+
+on:
+  push:
+    branches: [ main, feature/**, bugfix/** ]
+    paths:
+      - 'ConwayAPI/**'
+      - 'ConwayGameEngine/**'
+      - '.github/workflows/conwayapi-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'ConwayAPI/**'
+      - 'ConwayGameEngine/**'
+      - '.github/workflows/conwayapi-ci.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '5.10'
+
+      - name: Cache SPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm
+            ConwayAPI/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Swift Version
+        run: swift --version
+
+      - name: Test ConwayAPI
+        working-directory: ConwayAPI
+        run: swift test --enable-test-discovery
+
+  macos:
+    name: macOS
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '5.10'
+
+      - name: Cache SPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ConwayAPI/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Swift Version
+        run: swift --version
+
+      - name: Test ConwayAPI
+        working-directory: ConwayAPI
+        run: swift test --enable-test-discovery
+
