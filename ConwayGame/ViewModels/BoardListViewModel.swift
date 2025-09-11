@@ -5,9 +5,10 @@ import FactoryKit
 @MainActor
 final class BoardListViewModel: ObservableObject {
     @Published var boards: [Board] = []
+    @Published var gameError: GameError?
     @Injected(\.gameService) private var service: GameService
     @Injected(\.boardRepository) private var repository: BoardRepository
-    @Injected(\.gameEngineConfiguration) private var gameEngineConfiguration: GameEngineConfiguration
+    @Injected(\.gameEngineConfiguration) private var gameEngineConfiguration
 
     func load() async {
         do {
@@ -15,6 +16,11 @@ final class BoardListViewModel: ObservableObject {
             self.boards = boards.sorted(by: { $0.createdAt > $1.createdAt })
         } catch {
             self.boards = []
+            if let gameError = error as? GameError {
+                self.gameError = gameError
+            } else {
+                self.gameError = .persistenceError("Failed to load boards: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -36,8 +42,25 @@ final class BoardListViewModel: ObservableObject {
     }
 
     func delete(id: UUID) async {
-        try? await repository.delete(id: id)
-        await load()
+        do {
+            try await repository.delete(id: id)
+            await load()
+        } catch {
+            if let gameError = error as? GameError {
+                self.gameError = gameError
+            } else {
+                self.gameError = .persistenceError("Failed to delete board: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func handleRecoveryAction(_ action: ErrorRecoveryAction) {
+        switch action {
+        case .retry:
+            Task { await load() }
+        case .goBack, .goToBoardList, .createNew, .continueWithoutSaving, .cancel, .contactSupport, .resetBoard, .tryAgain:
+            break
+        }
     }
 }
 

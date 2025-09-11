@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */ = {isa = PBXBuildFile; productRef = EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */; };
 		EB809C7A2E6F2053001C4BEC /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = EB809C792E6F2053001C4BEC /* FactoryKit */; };
 		EB809C7C2E6F2054001C4BEC /* FactoryTesting in Frameworks */ = {isa = PBXBuildFile; productRef = EB809C7B2E6F2054001C4BEC /* FactoryTesting */; };
+		EBFEB2F32E6F2052001C4BEC /* ConwayGameEngine in Frameworks */ = {isa = PBXBuildFile; productRef = EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -594,10 +594,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ConwayGameEngine;
-		};
 		EB809C792E6F2053001C4BEC /* FactoryKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */;
@@ -607,6 +603,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EB809C782E6F2053001C4BEC /* XCRemoteSwiftPackageReference "Factory" */;
 			productName = FactoryTesting;
+		};
+		EBFEB2F22E6F2052001C4BEC /* ConwayGameEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ConwayGameEngine;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -46,6 +46,7 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.state)
         XCTAssertFalse(viewModel.isPlaying)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertFalse(viewModel.isFinalLocked)
     }
     
@@ -62,25 +63,26 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state?.generation, 0)
         XCTAssertEqual(viewModel.state?.populationCount, 4)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertFalse(viewModel.isFinalLocked)
     }
     
-    func test_loadCurrent_boardNotFound_setsErrorMessage() async {
+    func test_loadCurrent_boardNotFound_setsGameError() async {
         // Repository is empty, board won't be found
         await viewModel.loadCurrent()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertEqual(viewModel.errorMessage, "Board not found")
+        XCTAssertEqual(viewModel.gameError, .boardNotFound(testBoardId))
     }
     
-    func test_loadCurrent_repositoryError_setsErrorMessage() async {
+    func test_loadCurrent_repositoryError_setsGameError() async {
         mockRepository.shouldThrowError = true
         mockRepository.errorToThrow = .computationError("Repository error")
         
         await viewModel.loadCurrent()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertEqual(viewModel.errorMessage, "Computation error: Repository error")
+        XCTAssertEqual(viewModel.gameError, .computationError("Repository error"))
     }
     
     // MARK: - Step Tests
@@ -93,16 +95,17 @@ final class GameViewModelTests: XCTestCase {
         
         XCTAssertEqual(viewModel.state, testState)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertEqual(mockService.getNextStateCallCount, 1)
     }
     
-    func test_step_failure_setsErrorMessage() async {
+    func test_step_failure_setsGameError() async {
         mockService.nextStateResult = .failure(.computationError("Step error"))
         
         await viewModel.step()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertEqual(viewModel.errorMessage, "Computation error: Step error")
+        XCTAssertEqual(viewModel.gameError, .computationError("Step error"))
     }
     
     func test_step_whenFinalLocked_doesNothing() async {
@@ -116,6 +119,10 @@ final class GameViewModelTests: XCTestCase {
     // MARK: - Jump Tests
     
     func test_jump_success_updatesState() async {
+        // Setup board in repository for the jump method to update
+        let testBoard = createTestBoard()
+        mockRepository.preloadBoard(testBoard)
+        
         let targetGeneration = 10
         let testState = createTestGameState(generation: targetGeneration)
         mockService.stateAtGenerationResult = .success(testState)
@@ -126,16 +133,17 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state?.generation, targetGeneration)
         XCTAssertFalse(viewModel.isFinalLocked)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertEqual(mockService.getStateAtGenerationCallCount, 1)
     }
     
-    func test_jump_failure_setsErrorMessage() async {
+    func test_jump_failure_setsGameError() async {
         mockService.stateAtGenerationResult = .failure(.boardNotFound(testBoardId))
         
         await viewModel.jump(to: 5)
         
         XCTAssertNil(viewModel.state)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.gameError, .boardNotFound(testBoardId))
     }
     
     // MARK: - FinalState Tests
@@ -153,16 +161,17 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isFinalLocked)
         XCTAssertFalse(viewModel.isPlaying)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertEqual(mockService.getFinalStateCallCount, 1)
     }
     
-    func test_finalState_failure_setsErrorMessage() async {
+    func test_finalState_failure_setsGameError() async {
         mockService.finalStateResult = .failure(.convergenceTimeout(maxIterations: 100))
         
         await viewModel.finalState(maxIterations: 100)
         
         XCTAssertNil(viewModel.state)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.gameError, .convergenceTimeout(maxIterations: 100))
         XCTAssertFalse(viewModel.isFinalLocked)
     }
     
@@ -174,6 +183,7 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.state)
         XCTAssertTrue(viewModel.showGenerationLimitAlert)
         XCTAssertNil(viewModel.errorMessage) // Should not set error message
+        XCTAssertNil(viewModel.gameError) // Should not set game error either
         XCTAssertFalse(viewModel.isFinalLocked)
     }
     
@@ -184,6 +194,7 @@ final class GameViewModelTests: XCTestCase {
         
         XCTAssertTrue(viewModel.showGenerationLimitAlert)
         XCTAssertNil(viewModel.errorMessage) // Should be nil, not the generic error message
+        XCTAssertNil(viewModel.gameError) // Should not set game error
     }
     
     func test_showGenerationLimitAlert_initiallyFalse() {
@@ -228,17 +239,18 @@ final class GameViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isPlaying)
         XCTAssertFalse(viewModel.isFinalLocked)
         XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.gameError)
         XCTAssertEqual(mockRepository.resetCallCount, 1)
     }
     
-    func test_reset_failure_setsErrorMessage() async {
+    func test_reset_failure_setsGameError() async {
         mockRepository.shouldThrowError = true
         mockRepository.errorToThrow = .boardNotFound(testBoardId)
         
         await viewModel.reset()
         
         XCTAssertNil(viewModel.state)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.gameError, .boardNotFound(testBoardId))
     }
     
     // MARK: - Play/Pause Tests
@@ -424,14 +436,70 @@ final class GameViewModelTests: XCTestCase {
     
     // MARK: - Error Handling Tests
     
+    func test_handleRecoveryAction_retry_reloadsBoard() async {
+        // Setup initial board
+        let testBoard = createTestBoard()
+        mockRepository.preloadBoard(testBoard)
+        
+        viewModel.handleRecoveryAction(.retry)
+        
+        // Give async operation time to complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        
+        XCTAssertEqual(mockRepository.loadCallCount, 1) // Called by retry action
+    }
+    
+    func test_handleRecoveryAction_resetBoard_resetsBoard() async {
+        // Setup initial board
+        let testBoard = createTestBoard()
+        mockRepository.preloadBoard(testBoard)
+        
+        viewModel.handleRecoveryAction(.resetBoard)
+        
+        // Give async operation time to complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        
+        XCTAssertEqual(mockRepository.resetCallCount, 1)
+    }
+    
+    func test_handleRecoveryAction_tryAgain_performsStep() async {
+        // Setup initial board and state
+        let testBoard = createTestBoard()
+        mockRepository.preloadBoard(testBoard)
+        await viewModel.loadCurrent()
+        
+        let initialCallCount = mockService.getNextStateCallCount
+        
+        viewModel.handleRecoveryAction(.tryAgain)
+        
+        // Give async operation time to complete  
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        
+        XCTAssertEqual(mockService.getNextStateCallCount, initialCallCount + 1)
+    }
+    
+    func test_handleRecoveryAction_navigationActions_doNothing() {
+        // These actions should be handled by the UI layer, not the ViewModel
+        viewModel.handleRecoveryAction(.goBack)
+        viewModel.handleRecoveryAction(.goToBoardList) 
+        viewModel.handleRecoveryAction(.createNew)
+        viewModel.handleRecoveryAction(.continueWithoutSaving)
+        viewModel.handleRecoveryAction(.cancel)
+        viewModel.handleRecoveryAction(.contactSupport)
+        
+        // No assertions needed - just ensuring no crashes occur
+        XCTAssert(true)
+    }
+    
     func test_multipleErrors_onlyShowsLatest() async {
         mockService.nextStateResult = .failure(.computationError("First error"))
         await viewModel.step()
-        XCTAssertEqual(viewModel.errorMessage, "Computation error: First error")
+        XCTAssertEqual(viewModel.gameError, .computationError("First error"))
         
         mockService.stateAtGenerationResult = .failure(.boardNotFound(testBoardId))
         await viewModel.jump(to: 5)
-        XCTAssertNotEqual(viewModel.errorMessage, "First error")
+        XCTAssertEqual(viewModel.gameError, .boardNotFound(testBoardId))
+        XCTAssertNotEqual(viewModel.gameError, .computationError("First error"))
     }
     
     // MARK: - Concurrent Operations Tests
@@ -533,6 +601,7 @@ final class BoardListViewModelTests: XCTestCase {
     
     func test_init_setsInitialState() {
         XCTAssertTrue(viewModel.boards.isEmpty)
+        XCTAssertNil(viewModel.gameError)
     }
     
     // MARK: - Load Tests
@@ -554,13 +623,14 @@ final class BoardListViewModelTests: XCTestCase {
         XCTAssertEqual(mockRepository.loadAllCallCount, 1)
     }
     
-    func test_load_failure_clearsBoards() async {
+    func test_load_failure_clearsBoardsAndSetsError() async {
         mockRepository.shouldThrowError = true
-        mockRepository.errorToThrow = .computationError("Load error")
+        mockRepository.errorToThrow = .persistenceError("Load error")
         
         await viewModel.load()
         
         XCTAssertTrue(viewModel.boards.isEmpty)
+        XCTAssertEqual(viewModel.gameError, .persistenceError("Load error"))
     }
     
     func test_load_sortsByCreatedDate() async {
@@ -600,19 +670,18 @@ final class BoardListViewModelTests: XCTestCase {
         XCTAssertEqual(mockRepository.deleteCallCount, 1)
     }
     
-    func test_delete_failure_stillReloads() async {
+    func test_delete_failure_setsError() async {
         let board = createTestBoard(name: "Test Board")
         mockRepository.preloadBoard(board)
         await viewModel.load()
         
         mockRepository.shouldThrowError = true
-        mockRepository.errorToThrow = .boardNotFound(board.id)
+        mockRepository.errorToThrow = .persistenceError("Failed to delete board")
         
         await viewModel.delete(id: board.id)
         
-        // Even if delete fails, load() is called again
         XCTAssertEqual(mockRepository.deleteCallCount, 1)
-        XCTAssertEqual(mockRepository.loadAllCallCount, 2) // Once for initial load, once after delete
+        XCTAssertEqual(viewModel.gameError, .persistenceError("Failed to delete board"))
     }
     
     // MARK: - CreateRandomBoard Tests
@@ -639,6 +708,34 @@ final class BoardListViewModelTests: XCTestCase {
         XCTAssertEqual(mockService.createBoardCallCount, 1)
         // With default name "Board", might not rename depending on UUID
         XCTAssertEqual(mockRepository.loadAllCallCount, 1)
+    }
+    
+    // MARK: - Recovery Action Tests
+    
+    func test_handleRecoveryAction_retry_reloadsBoards() async {
+        let initialLoadCount = mockRepository.loadAllCallCount
+        
+        viewModel.handleRecoveryAction(.retry)
+        
+        // Give async operation time to complete
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        
+        XCTAssertEqual(mockRepository.loadAllCallCount, initialLoadCount + 1)
+    }
+    
+    func test_handleRecoveryAction_otherActions_doNothing() {
+        // These actions should be handled by the UI layer, not the BoardListViewModel
+        viewModel.handleRecoveryAction(.goBack)
+        viewModel.handleRecoveryAction(.goToBoardList)
+        viewModel.handleRecoveryAction(.createNew)
+        viewModel.handleRecoveryAction(.continueWithoutSaving)
+        viewModel.handleRecoveryAction(.cancel)
+        viewModel.handleRecoveryAction(.contactSupport)
+        viewModel.handleRecoveryAction(.resetBoard)
+        viewModel.handleRecoveryAction(.tryAgain)
+        
+        // No assertions needed - just ensuring no crashes occur
+        XCTAssert(true)
     }
     
     // MARK: - Performance Tests
