@@ -6,6 +6,12 @@ public func configure(_ app: Application) throws {
     app.apiConfiguration = .fromEnvironment()
     let config = app.apiConfiguration
     
+    // Configure rate limiting
+    app.rateLimitConfiguration = .fromEnvironment()
+    
+    // Configure metrics collector
+    app.metricsCollector = InMemoryMetricsCollector()
+    
     // MARK: - JSON Encoding/Decoding
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .iso8601
@@ -16,13 +22,26 @@ public func configure(_ app: Application) throws {
     
     // MARK: - Middleware Configuration
     
+    // Add metrics collection first (to track all requests)
+    if config.enableMetrics {
+        app.middleware.use(MetricsMiddleware(metrics: app.metricsCollector))
+    }
+    
+    // Add rate limiting (after metrics, before other processing)
+    if config.enableRateLimiting {
+        app.middleware.use(RateLimitingMiddleware(
+            config: app.rateLimitConfiguration,
+            storage: InMemoryRateLimitStorage()
+        ))
+    }
+    
     // Add CORS support with configuration
     app.middleware.use(ConfigurableCORSMiddleware(config: config))
     
     // Add content type middleware
     app.middleware.use(JSONContentTypeMiddleware())
     
-    // Add error handling middleware
+    // Add error handling middleware (last, to catch all errors)
     app.middleware.use(APIErrorMiddleware())
     
     // MARK: - Route Configuration
@@ -60,4 +79,9 @@ public func configure(_ app: Application) throws {
     try app.register(collection: GameController())
     try app.register(collection: PatternsController())
     try app.register(collection: RulesController())
+    
+    // Register metrics endpoint if enabled
+    if config.enableMetrics {
+        try app.register(collection: MetricsController(metrics: app.metricsCollector))
+    }
 }
