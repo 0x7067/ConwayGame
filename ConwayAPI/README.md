@@ -177,6 +177,36 @@ Returns a specific pattern with its grid data.
 
 Returns all available rule configurations.
 
+### Monitoring
+
+#### Performance Metrics
+
+**GET** `/metrics`
+
+Returns performance metrics in Prometheus-compatible format (if metrics are enabled).
+
+**Response:**
+```json
+{
+  "metrics": [
+    {
+      "name": "http_requests_total",
+      "type": "counter",
+      "value": 142,
+      "tags": {"method": "POST", "endpoint": "/api/game/simulate"},
+      "timestamp": "2025-01-01T12:00:00Z"
+    },
+    {
+      "name": "http_request_duration_seconds",
+      "type": "histogram", 
+      "value": 0.023,
+      "tags": {"method": "POST", "endpoint": "/api/game/simulate", "stat": "avg"},
+      "timestamp": "2025-01-01T12:00:00Z"
+    }
+  ],
+  "timestamp": "2025-01-01T12:00:00Z"
+}
+
 ## Rule Systems
 
 ### Conway (Default)
@@ -207,6 +237,16 @@ Returns all available rule configurations.
 | `glider` | Spaceship | Diagonal traveling pattern |
 | `gospergun` | Gun | Glider-generating gun |
 
+## Response Headers
+
+All API responses include these headers for monitoring and debugging:
+
+- `X-Correlation-ID`: Unique request identifier for tracing
+- `X-Response-Time`: Response time in milliseconds
+- `X-RateLimit-Limit`: Rate limit maximum for the endpoint (if rate limiting enabled)
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: Unix timestamp when rate limit resets
+
 ## Error Handling
 
 All endpoints return appropriate HTTP status codes:
@@ -214,6 +254,7 @@ All endpoints return appropriate HTTP status codes:
 - `200` - Success
 - `400` - Bad Request (invalid grid, parameters)
 - `404` - Not Found (pattern not found)
+- `429` - Too Many Requests (rate limit exceeded)
 - `500` - Internal Server Error
 
 Error responses include details:
@@ -222,6 +263,17 @@ Error responses include details:
 {
   "error": "ValidationError",
   "message": "Invalid grid: Row 1 has inconsistent width: expected 3, got 2",
+  "timestamp": "2025-01-01T12:00:00Z"
+}
+```
+
+Rate limit exceeded responses:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Try again later.",
+  "retryAfter": 1672574400,
   "timestamp": "2025-01-01T12:00:00Z"
 }
 ```
@@ -253,7 +305,17 @@ The API supports extensive configuration via environment variables:
   - Use `"https://example.com,https://app.example.com"` for production
   - When specific origins are set, wildcard access is disabled for security
 
-### Debugging and Monitoring
+### Rate Limiting Configuration
+- `ENABLE_RATE_LIMITING`: Enable rate limiting middleware (default true)
+- `RATE_LIMIT_DEFAULT_MAX`: Default max requests per window (default 100)
+- `RATE_LIMIT_DEFAULT_WINDOW`: Default time window in seconds (default 60)
+- `RATE_LIMIT_SIMULATE_MAX`: Max requests for /api/game/simulate (default 20)
+- `RATE_LIMIT_SIMULATE_WINDOW`: Time window for simulate endpoint (default 60)
+- `RATE_LIMIT_GAME_MAX`: Max requests for game endpoints (default 50)
+- `RATE_LIMIT_HEALTH_MAX`: Max requests for health endpoint (default 300)
+
+### Monitoring and Metrics
+- `ENABLE_METRICS`: Enable performance metrics collection (default true)
 - `ENABLE_REQUEST_LOGGING`: Enable detailed request logging (default true)
 
 ### Example Production Configuration
@@ -265,11 +327,22 @@ export MAX_GENERATIONS=500
 export CORS_ALLOWED_ORIGINS="https://myapp.com,https://www.myapp.com"
 export API_VERSION="1.0.0"
 export ENVIRONMENT=production
+
+# Rate limiting for production
+export RATE_LIMIT_SIMULATE_MAX=10
+export RATE_LIMIT_GAME_MAX=30
+export RATE_LIMIT_DEFAULT_MAX=60
+
+# Monitoring
+export ENABLE_METRICS=true
+export ENABLE_REQUEST_LOGGING=false  # Reduce log volume in production
 ```
 
 ### Security Notes
 - Production deployments should set specific CORS origins instead of "*"
+- Rate limiting protects against abuse and resource exhaustion
 - All requests include `X-Correlation-ID` headers for debugging and tracing
+- Performance metrics are available at `/metrics` endpoint (if enabled)
 - JSON dates use ISO 8601 format for consistency
 
 ## Limits & Behavior
@@ -278,7 +351,8 @@ export ENVIRONMENT=production
 - Grid shape: grids must be rectangular and non-empty; validation returns `width`, `height`, and errors
 - Grid size caps: requests exceeding configured limits (default 200x200) are rejected with a clear error to protect resources
 - Rule presets: `conway`, `highlife`, `daynight` (alias `day-night`, `dayandnight`)
-- All responses include `X-Correlation-ID` header for request tracing
+- Rate limiting: different limits for compute-intensive vs read-only endpoints
+- All responses include performance and debugging headers (`X-Correlation-ID`, `X-Response-Time`, rate limit headers)
 
 ## Toolchains
 

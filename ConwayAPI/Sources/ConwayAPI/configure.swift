@@ -69,7 +69,8 @@ public func configure(_ app: Application) throws {
                 "POST /api/game/validate": "Validate grid",
                 "GET /api/patterns": "List all patterns",
                 "GET /api/patterns/{name}": "Get specific pattern",
-                "GET /api/rules": "List all rules"
+                "GET /api/rules": "List all rules",
+                "GET /metrics": "Performance metrics (if enabled)"
             ],
             documentation: "https://github.com/0x7067/ConwayGame/blob/main/ConwayAPI/README.md"
         )
