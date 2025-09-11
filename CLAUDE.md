@@ -53,6 +53,29 @@ swift test
 # Run CLI tool
 swift run conway-cli --help
 swift run conway-cli pattern glider
+
+# Code Formatting Commands
+
+# Install SwiftFormat (if not already installed)
+brew install swiftformat
+
+# Format all Swift code in ConwayGameEngine
+cd ConwayGameEngine && swiftformat .
+
+# Check formatting without making changes (ConwayGameEngine)
+cd ConwayGameEngine && swiftformat --lint .
+
+# Format all Swift code in ConwayAPI
+cd ConwayAPI && swiftformat .
+
+# Check formatting without making changes (ConwayAPI)
+cd ConwayAPI && swiftformat --lint .
+
+# Format entire project (run from project root)
+swiftformat ConwayGameEngine ConwayAPI
+
+# Check entire project formatting (run from project root)
+swiftformat ConwayGameEngine ConwayAPI --lint
 ```
 
 ## Architecture Overview
