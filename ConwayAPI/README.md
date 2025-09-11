@@ -235,18 +235,50 @@ Error responses include details:
 
 ## Configuration
 
-- Environment variables:
-  - `PORT`: Port to listen on (default 8080)
-  - `ENVIRONMENT`: Vapor environment (`production`, `testing`, etc.)
-- JSON dates use ISO 8601 for consistency.
-- CORS: permissive by default via `SimpleCORSMiddleware` (allows `*`). Consider tightening for production.
+The API supports extensive configuration via environment variables:
+
+### Core Settings
+- `PORT`: Port to listen on (default 8080)
+- `ENVIRONMENT`: Vapor environment (`production`, `testing`, etc.)
+- `API_VERSION`: API version string (default "1.0.0")
+
+### Grid and Simulation Limits
+- `MAX_GRID_WIDTH`: Maximum grid width allowed (default 200)
+- `MAX_GRID_HEIGHT`: Maximum grid height allowed (default 200)
+- `MAX_GENERATIONS`: Maximum generations per simulation (default 1000)
+
+### CORS Configuration
+- `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed origins (default "*")
+  - Use `"*"` for development (allows all origins)
+  - Use `"https://example.com,https://app.example.com"` for production
+  - When specific origins are set, wildcard access is disabled for security
+
+### Debugging and Monitoring
+- `ENABLE_REQUEST_LOGGING`: Enable detailed request logging (default true)
+
+### Example Production Configuration
+
+```bash
+export MAX_GRID_WIDTH=100
+export MAX_GRID_HEIGHT=100
+export MAX_GENERATIONS=500
+export CORS_ALLOWED_ORIGINS="https://myapp.com,https://www.myapp.com"
+export API_VERSION="1.0.0"
+export ENVIRONMENT=production
+```
+
+### Security Notes
+- Production deployments should set specific CORS origins instead of "*"
+- All requests include `X-Correlation-ID` headers for debugging and tracing
+- JSON dates use ISO 8601 format for consistency
 
 ## Limits & Behavior
 
-- Generations: `/api/game/simulate` is capped at 1000 generations.
-- Grid shape: grids must be rectangular and non-empty; validation returns `width`, `height`, and errors.
-- Grid size caps: requests exceeding 200x200 are rejected with a clear error to protect resources.
-- Rule presets: `conway`, `highlife`, `daynight` (alias `day-night`, `dayandnight`).
+- Generations: `/api/game/simulate` is capped at configurable max (default 1000 generations)
+- Grid shape: grids must be rectangular and non-empty; validation returns `width`, `height`, and errors
+- Grid size caps: requests exceeding configured limits (default 200x200) are rejected with a clear error to protect resources
+- Rule presets: `conway`, `highlife`, `daynight` (alias `day-night`, `dayandnight`)
+- All responses include `X-Correlation-ID` header for request tracing
 
 ## Toolchains
 
