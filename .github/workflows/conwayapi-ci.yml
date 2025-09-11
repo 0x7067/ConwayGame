@@ -22,6 +22,7 @@ jobs:
   linux:
     name: Linux (Ubuntu, Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
+    container: swift:${{ matrix.swift }}-jammy
     strategy:
       fail-fast: false
       matrix:
@@ -30,12 +31,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        id: swift
-        with:
-          swift-version: ${{ matrix.swift }}
-
       - name: Cache SPM
         uses: actions/cache@v4
         with:
@@ -43,7 +38,7 @@ jobs:
             ~/.swiftpm
             ConwayAPI/.build
             ConwayGameEngine/.build
-          key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ steps.swift.outputs.swift-version }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('ConwayAPI/Package.resolved') }}-swift-${{ matrix.swift }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
