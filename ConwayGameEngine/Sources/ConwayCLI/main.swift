@@ -2,6 +2,9 @@ import Foundation
 import ConwayGameEngine
 
 struct ConwayCLI {
+    private static let gameEngineConfiguration = GameEngineConfiguration.default
+    private static let playSpeedConfiguration = PlaySpeedConfiguration.default
+    
     static func main() async throws {
         let args = CommandLine.arguments
         
@@ -33,17 +36,21 @@ struct ConwayCLI {
             conway-cli <command> [options]
         
         COMMANDS:
-            run <width> <height> <generations> [pattern]
+            run <width> <height> <generations> [pattern] [--density=<value>] [--rules=<name>]
                 Run a simulation with specified dimensions and generations
                 Optional pattern: random, empty, or pattern name
+                --density: Random density (0.0-1.0), default: \(gameEngineConfiguration.defaultRandomDensity)
+                --rules: Rule preset (conway, highlife, daynight), default: conway
         
-            pattern <name>
+            pattern <name> [--rules=<name>]
                 Run a predefined pattern simulation
+                --rules: Rule preset (conway, highlife, daynight), default: conway
         
         EXAMPLES:
             conway-cli run 20 20 50 random
-            conway-cli run 10 10 25 empty  
-            conway-cli pattern glider
+            conway-cli run 10 10 25 empty --density=0.4
+            conway-cli run 15 15 30 random --rules=highlife
+            conway-cli pattern glider --rules=daynight
         """)
     }
     
@@ -62,10 +69,11 @@ struct ConwayCLI {
             return
         }
         
-        let patternType = args.count > 3 ? args[3] : "random"
-        let initialGrid = createGrid(width: width, height: height, pattern: patternType)
+        let patternType = args.count > 3 && !args[3].hasPrefix("--") ? args[3] : "random"
+        let (configuration, customDensity) = parseConfigurationArgs(Array(args.dropFirst(3)))
+        let initialGrid = createGrid(width: width, height: height, pattern: patternType, customDensity: customDensity)
         
-        let engine = ConwayGameEngine()
+        let engine = ConwayGameEngine(configuration: configuration)
         let detector = DefaultConvergenceDetector()
         
         print("Starting Conway's Game of Life simulation")
@@ -107,7 +115,7 @@ struct ConwayCLI {
             if generation < generations {
                 print()
                 // Add small delay for better visualization
-                try await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                try await Task.sleep(nanoseconds: playSpeedConfiguration.cliDelays.simulationDelay)
             }
         }
         
@@ -128,11 +136,13 @@ struct ConwayCLI {
             return
         }
         
+        let (configuration, _) = parseConfigurationArgs(Array(args.dropFirst(1)))
+        
         print("Running pattern: \(pattern.displayName)")
         print("Description: \(pattern.description)")
         print("─" * 50)
         
-        let engine = ConwayGameEngine()
+        let engine = ConwayGameEngine(configuration: configuration)
         var currentGrid = pattern.cells
         
         print("Generation 0:")
@@ -141,7 +151,7 @@ struct ConwayCLI {
         print()
         
         // Run for a reasonable number of generations to show the pattern behavior
-        let maxGenerations = 50
+        let maxGenerations = gameEngineConfiguration.maxPatternGenerations
         for generation in 1...maxGenerations {
             let nextGrid = engine.computeNextState(currentGrid)
             
@@ -153,7 +163,7 @@ struct ConwayCLI {
             
             currentGrid = nextGrid
             
-            if generation <= 10 || generation % 5 == 0 {
+            if gameEngineConfiguration.displayFrequency.shouldDisplay(generation: generation) {
                 print("Generation \(generation):")
                 print(currentGrid.toString())
                 print("Population: \(currentGrid.population)")
@@ -161,29 +171,59 @@ struct ConwayCLI {
             }
             
             // Small delay for visualization
-            try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            try await Task.sleep(nanoseconds: playSpeedConfiguration.cliDelays.patternDelay)
         }
     }
     
-    private static func createGrid(width: Int, height: Int, pattern: String) -> CellsGrid {
+    private static func parseConfigurationArgs(_ args: [String]) -> (GameEngineConfiguration, Double?) {
+        var configuration = gameEngineConfiguration
+        var customDensity: Double? = nil
+        
+        for arg in args {
+            if arg.hasPrefix("--density=") {
+                let densityString = String(arg.dropFirst("--density=".count))
+                if let density = Double(densityString), density >= 0.0 && density <= 1.0 {
+                    customDensity = density
+                } else {
+                    print("Warning: Invalid density value '\(densityString)', using default")
+                }
+            } else if arg.hasPrefix("--rules=") {
+                let rulesString = String(arg.dropFirst("--rules=".count))
+                switch rulesString.lowercased() {
+                case "conway":
+                    configuration = .classicConway
+                case "highlife":
+                    configuration = .highLife
+                case "daynight", "dayandnight":
+                    configuration = .dayAndNight
+                default:
+                    print("Warning: Unknown rules '\(rulesString)', using default Conway rules")
+                }
+            }
+        }
+        
+        return (configuration, customDensity)
+    }
+    
+    private static func createGrid(width: Int, height: Int, pattern: String, customDensity: Double? = nil) -> CellsGrid {
         switch pattern.lowercased() {
         case "empty":
             return CellsGrid.empty(width: width, height: height)
         case "random":
-            return generateRandomGrid(width: width, height: height)
+            return generateRandomGrid(width: width, height: height, customDensity: customDensity)
         default:
             // Try to get a predefined pattern, fallback to random
             if let patternEnum = Pattern.named(pattern) {
                 return patternEnum.cells
             } else {
                 print("Warning: Unknown pattern '\(pattern)', using random instead")
-                return generateRandomGrid(width: width, height: height)
+                return generateRandomGrid(width: width, height: height, customDensity: customDensity)
             }
         }
     }
     
-    private static func generateRandomGrid(width: Int, height: Int) -> CellsGrid {
-        let density = 0.3 // 30% chance of cell being alive
+    private static func generateRandomGrid(width: Int, height: Int, customDensity: Double? = nil) -> CellsGrid {
+        let density = customDensity ?? gameEngineConfiguration.defaultRandomDensity
         return (0..<height).map { _ in
             (0..<width).map { _ in
                 Double.random(in: 0...1) < density

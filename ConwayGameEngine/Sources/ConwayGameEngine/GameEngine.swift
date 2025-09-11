@@ -7,13 +7,13 @@ public protocol GameEngine {
 
 public struct GameRules {
     @inline(__always)
-    public static func shouldCellLive(isAlive: Bool, neighborCount: Int) -> Bool {
+    public static func shouldCellLive(isAlive: Bool, neighborCount: Int, configuration: GameEngineConfiguration = .default) -> Bool {
         if isAlive {
-            // Survival if 2 or 3 neighbors
-            return neighborCount == 2 || neighborCount == 3
+            // Cell survives if neighbor count is in survival set
+            return configuration.survivalNeighborCounts.contains(neighborCount)
         } else {
-            // Birth if exactly 3 neighbors
-            return neighborCount == 3
+            // Cell is born if neighbor count is in birth set
+            return configuration.birthNeighborCounts.contains(neighborCount)
         }
     }
 
@@ -37,7 +37,11 @@ public struct GameRules {
 }
 
 public final class ConwayGameEngine: GameEngine {
-    public init() {}
+    private let configuration: GameEngineConfiguration
+    
+    public init(configuration: GameEngineConfiguration = .default) {
+        self.configuration = configuration
+    }
 
     public func computeNextState(_ currentState: CellsGrid) -> CellsGrid {
         let height = currentState.count
@@ -50,7 +54,7 @@ public final class ConwayGameEngine: GameEngine {
                 let alive = currentState[y][x]
                 // countNeighbors expects (row, col) order
                 let n = GameRules.countNeighbors(currentState, x: y, y: x)
-                let willLive = GameRules.shouldCellLive(isAlive: alive, neighborCount: n)
+                let willLive = GameRules.shouldCellLive(isAlive: alive, neighborCount: n, configuration: configuration)
                 next[y][x] = willLive
                 if willLive != alive { anyChange = true }
             }
