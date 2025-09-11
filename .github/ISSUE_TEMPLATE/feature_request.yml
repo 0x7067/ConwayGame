@@ -1,0 +1,173 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for Conway's Game of Life
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please provide detailed information to help us understand and evaluate your request.
+
+  - type: checkboxes
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the app would this feature affect?
+      options:
+        - label: iOS App (User interface, navigation, settings)
+        - label: Game Engine (Conway's Game logic, rules, algorithms)
+        - label: Game Visualization (Board display, animations, patterns)
+        - label: Data Management (Board saving, pattern library, export/import)
+        - label: CLI Tool (ConwayCLI features and commands)
+        - label: Developer Experience (Build tools, testing, documentation)
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What's the current limitation or pain point?
+      placeholder: |
+        Describe the problem or limitation you're experiencing.
+        For example: "Currently, users cannot..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your idea for solving this problem
+      placeholder: |
+        Describe how you envision this feature working.
+        Be as specific as possible about the user experience and functionality.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature is this?
+      options:
+        - New UI Component/Screen
+        - Game Engine Enhancement
+        - Pattern Library Addition
+        - Export/Import Capability
+        - Performance Optimization
+        - Accessibility Improvement
+        - CLI Tool Enhancement
+        - Developer Tool
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: ui-mockup
+    attributes:
+      label: UI/UX Design Ideas
+      description: |
+        If this involves UI changes, describe or sketch how it might look.
+        You can drag and drop mockups, wireframes, or reference images here.
+      placeholder: |
+        Describe the user interface changes or attach mockups/wireframes.
+        Include details about navigation, layout, and user interactions.
+
+  - type: textarea
+    id: architecture
+    attributes:
+      label: Architecture Considerations
+      description: How might this feature fit into the existing codebase?
+      placeholder: |
+        Consider:
+        - Which layers would be affected (UI, Service, Repository, Engine)?
+        - Any new protocols or components needed?
+        - Integration with existing features?
+        - Data model changes required?
+
+  - type: checkboxes
+    id: complexity
+    attributes:
+      label: Implementation Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - label: Simple (Minor UI changes, configuration options)
+        - label: Moderate (New screens, additional game features)
+        - label: Complex (Major architecture changes, new algorithms)
+        - label: Not sure
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Are there alternative approaches or workarounds you've considered?
+      placeholder: |
+        Describe any alternative solutions or workarounds you've thought of.
+        Why do you prefer your proposed solution?
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Critical (Blocks usage)
+        - High (Significantly improves experience)
+        - Medium (Nice to have improvement)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe specific scenarios where this feature would be useful
+      placeholder: |
+        Provide concrete examples of how users would benefit from this feature:
+        - As a casual user, I want to...
+        - As a researcher studying Conway's Game, I need to...
+        - As a developer extending the app, I would like to...
+
+  - type: textarea
+    id: performance
+    attributes:
+      label: Performance Implications
+      description: Any thoughts on how this might affect app performance?
+      placeholder: |
+        Consider:
+        - Impact on game computation speed
+        - Memory usage implications
+        - UI responsiveness concerns
+        - Battery life on mobile devices
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or References
+      description: |
+        Are there similar features in other apps or games that demonstrate this concept?
+        Include links, screenshots, or descriptions.
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Interest
+      description: Would you be interested in helping implement this feature?
+      options:
+        - label: I'd like to work on this feature myself
+        - label: I could help with design/planning
+        - label: I could help with testing
+        - label: I'm not able to contribute code but would love to see this implemented
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm you've completed these steps
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided a clear problem statement and proposed solution
+          required: true
+        - label: I have considered how this fits with the existing app architecture
+          required: true

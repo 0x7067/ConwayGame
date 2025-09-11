@@ -1,0 +1,155 @@
+name: ❓ Question
+description: Ask questions about the project, architecture, or usage
+title: "[Question]: "
+labels: ["question", "needs-response"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about Conway's Game of Life project? We're here to help!
+        Please provide context so we can give you the best possible answer.
+
+  - type: checkboxes
+    id: topic-area
+    attributes:
+      label: Topic Area
+      description: What is your question about?
+      options:
+        - label: Project Setup (Installation, building, environment)
+        - label: Architecture (Code structure, design patterns, layers)
+        - label: Game Engine (Conway's Game logic, algorithms)
+        - label: iOS Development (SwiftUI, Core Data, iOS-specific)
+        - label: Swift Package (ConwayGameEngine usage, CLI tool)
+        - label: Testing (Unit tests, integration tests, test strategy)
+        - label: Contributing (How to contribute, development workflow)
+        - label: Performance (Optimization, profiling, benchmarks)
+        - label: Features (How existing features work)
+        - label: Patterns (Game of Life patterns, mathematical aspects)
+        - label: Other
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: |
+        Be as specific as possible. Include what you're trying to accomplish or understand.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide background about what you're working on or trying to understand
+      placeholder: |
+        Examples:
+        - I'm trying to add a new game rule variant
+        - I want to understand how convergence detection works
+        - I'm having trouble understanding the repository pattern implementation
+        - I'm new to Swift and don't understand the protocol usage
+        - I want to optimize performance for large grids
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: What have you tried?
+      description: |
+        What have you already attempted or researched?
+        This helps us avoid suggesting things you've already tried.
+      placeholder: |
+        Examples:
+        - I read the CONTRIBUTING.md but still don't understand...
+        - I looked at the GameEngine.swift file but...
+        - I searched through the issues but didn't find...
+        - I tried following the setup instructions but...
+
+  - type: dropdown
+    id: experience
+    attributes:
+      label: Your Experience Level
+      description: This helps us tailor our response appropriately
+      options:
+        - New to iOS development
+        - Experienced iOS developer, new to this project
+        - Experienced with this project
+        - New to Swift programming
+        - Experienced Swift developer
+        - New to Conway's Game of Life
+        - Familiar with Game of Life concepts
+    validations:
+      required: true
+
+  - type: textarea
+    id: specific-files
+    attributes:
+      label: Specific Files/Code
+      description: |
+        If your question relates to specific files or code sections, please mention them.
+        You can also paste relevant code snippets here.
+      placeholder: |
+        Examples:
+        - ConwayGame/Services/GameService.swift, line 45
+        - The GameEngine protocol implementation
+        - How the convergence detection algorithm works in ConvergenceDetector.swift
+        - Usage of @inline(__always) in the game engine
+
+  - type: textarea
+    id: code-snippets
+    attributes:
+      label: Relevant Code
+      description: |
+        If applicable, include code snippets that relate to your question.
+        Use triple backticks (```) to format code blocks.
+      render: swift
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Priority
+      description: How urgent is getting an answer to this question?
+      options:
+        - Blocking my work (high priority)
+        - Important for my current task
+        - General curiosity/learning
+        - Not urgent
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected Outcome
+      description: What kind of response would be most helpful?
+      placeholder: |
+        Examples:
+        - Code example showing how to implement...
+        - Explanation of the architecture decision for...
+        - Pointer to relevant documentation or examples
+        - Step-by-step guide for...
+        - Clarification about why the code does...
+
+  - type: checkboxes
+    id: research
+    attributes:
+      label: Research Checklist
+      description: Please confirm you've done basic research first
+      options:
+        - label: I have read the README.md
+          required: false
+        - label: I have read the CONTRIBUTING.md (if relevant)
+          required: false
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: I have looked at the relevant source code files
+          required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any other details that might help us answer your question?
+      placeholder: |
+        Include any other context, related questions, or information that might be relevant.
