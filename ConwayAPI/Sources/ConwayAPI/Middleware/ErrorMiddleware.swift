@@ -3,10 +3,20 @@ import Vapor
 
 struct APIErrorMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
+        // Generate correlation ID for this request
+        let correlationId = UUID().uuidString.lowercased()
+        request.storage[CorrelationIDKey.self] = correlationId
+        
         do {
-            return try await next.respond(to: request)
+            let response = try await next.respond(to: request)
+            // Add correlation ID to successful responses
+            response.headers.replaceOrAdd(name: "X-Correlation-ID", value: correlationId)
+            return response
         } catch {
-            return try await handleError(error, for: request)
+            let errorResponse = try await handleError(error, for: request)
+            // Add correlation ID to error responses
+            errorResponse.headers.replaceOrAdd(name: "X-Correlation-ID", value: correlationId)
+            return errorResponse
         }
     }
     
@@ -43,8 +53,9 @@ struct APIErrorMiddleware: AsyncMiddleware {
                 message: "An unexpected error occurred"
             )
             
-            // Log the actual error for debugging
-            request.logger.error("Unhandled error: \(error)")
+            // Log the actual error for debugging with correlation ID
+            let correlationId = request.storage[CorrelationIDKey.self] ?? "unknown"
+            request.logger.error("Unhandled error [correlation-id: \(correlationId)]: \(error)")
         }
         
         let response = Response(status: status)
@@ -71,6 +82,18 @@ struct APIErrorMiddleware: AsyncMiddleware {
         @unknown default:
             return "Invalid request data format"
         }
+    }
+}
+
+// MARK: - Correlation ID Storage
+
+struct CorrelationIDKey: StorageKey {
+    typealias Value = String
+}
+
+extension Request {
+    public var correlationID: String {
+        return storage[CorrelationIDKey.self] ?? "unknown"
     }
 }
 
